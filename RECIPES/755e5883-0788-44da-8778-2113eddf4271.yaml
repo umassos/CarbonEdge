@@ -1,0 +1,11 @@
+description: |-
+  OpenRTiST deployment (GPU)
+chart: https://cmusatyalab.github.io/sinfonia/openrtist
+version: 0.1.3
+values:
+  fullnameOverride: openrtist
+  runtimeClassName: nvidia
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+restricted: false

@@ -1,0 +1,29 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: charts/helloworld/*
+Copyright: 2022 Helm Authors
+License: 0BSD
+
+Files: charts/openrtist/*
+Copyright: 2022 Carnegie Mellon University
+License: 0BSD
+
+Files: charts/sinfonia/*
+Copyright: 2022 Carnegie Mellon University
+License: MIT
+
+Files: poetry.lock
+Copyright: 2021-2022 Carnegie Mellon University
+License: 0BSD
+
+Files: README.md
+Copyright: 2021-2022 Carnegie Mellon University
+License: MIT
+
+Files: TODO.md
+Copyright: 2021-2022 Carnegie Mellon University
+License: MIT
+
+Files: RECIPES/*.yaml
+Copyright: 2022 Carnegie Mellon University
+License: 0BSD
