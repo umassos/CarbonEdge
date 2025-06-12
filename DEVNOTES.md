@@ -21,7 +21,7 @@ Note that (SINFONIA) denotes elements already provided by original Sinfonia code
 - [ ] DCGM (NVIDIA) energy report as cloudlet resources via Prometheus.
 - [ ] Carbon trace interface and logic.
     - [ ] Real-time carbon trace.
-        - Get Electricity Maps region code: User-provide (lat-long) > Auto-detect (provided byElectricity Maps)
+        - [ ] Get Electricity Maps region code: User-provide (lat-long) > Auto-detect (provided byElectricity Maps)
     - [ ] Carbon trace replay.
         - [ ] Pull trace from repo.
         - [ ] Parse trace file.
