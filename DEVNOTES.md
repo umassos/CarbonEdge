@@ -21,6 +21,7 @@ Note that (SINFONIA) denotes elements already provided by original Sinfonia code
 - [ ] DCGM (NVIDIA) energy report as cloudlet resources via Prometheus.
 - [ ] Carbon trace interface and logic.
     - [ ] Real-time carbon trace.
+        - Get Electricity Maps region code: User-provide (lat-long) > Auto-detect (provided byElectricity Maps)
     - [ ] Carbon trace replay.
         - [ ] Pull trace from repo.
         - [ ] Parse trace file.
@@ -58,3 +59,11 @@ TBD
 Must-work functionalities in the end-product:
 
 1. User must be able to interface with CarbonEdge as listed in the User interface section.
+
+
+## Notes
+
+### Configurable environment variables
+
+- CARBON_QUERY_MODES = "realtime" | "playback" 
+    - How to query carbon intensity data.
