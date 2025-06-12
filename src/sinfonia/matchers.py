@@ -36,7 +36,7 @@ Tier1MatchFunction = Callable[
 
 def get_match_function_plugins() -> dict[str, EntryPoint]:
     """Returns a list of match function plugin entrypoints"""
-    return {ep.name: ep for ep in entry_points(group="sinfonia.tier1_matchers")}
+    return {ep.name: ep for ep in entry_points(group="src.sinfonia.tier1_matchers")}
 
 
 def tier1_best_match(
