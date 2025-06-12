@@ -65,5 +65,16 @@ Must-work functionalities in the end-product:
 
 ### Configurable environment variables
 
-- CARBON_QUERY_MODES = "realtime" | "playback" 
+- CARBON_INTENSITY_QUERY_MODE = "realtime" | "replay" 
     - How to query carbon intensity data.
+        - "realtime" means querying live data from Electricity Maps.
+        - "replay" means going through carbon trace.
+
+- CARBON_TRACE_URI = url | local path
+    - Where to locate carbon trace file (must be from Electricity Maps)
+    - Either URL or local path.
+    - Only active if CARBON_INTENSITY_QUERY_MODE == "replay".
+
+## Questions
+
+- What happens in "replay" mode when you finish running through the entire trace file?

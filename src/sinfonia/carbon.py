@@ -1,6 +1,6 @@
 from enum import Enum
 
 
-class CarbonIntensityQueryType(Enum):
+class CarbonIntensityQueryMode(Enum):
     REALTIME = 'realtime'
-    PLAYBACK = 'playback'
+    REPLAY = 'replay'
