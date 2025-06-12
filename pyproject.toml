@@ -84,6 +84,7 @@ sinfonia-tier2 = "src.sinfonia.app_tier2:cli"
 network = "src.sinfonia.matchers:match_by_network"
 location = "src.sinfonia.matchers:match_by_location"
 random = "src.sinfonia.matchers:match_random"
+carbon-aware = "src.sinfonia.matchers:match_carbon_aware"
 
 [tool.black]
 target-version = ["py37"]

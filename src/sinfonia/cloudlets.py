@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import socket
+from enum import Enum
 from concurrent.futures import Future
 from ipaddress import IPv4Network, IPv6Network, ip_interface
 from typing import Any, List, Union
@@ -104,6 +105,11 @@ CLOUDLET_SCHEMA = {
         },
     },
 }
+
+
+class CloudletResourceField(Enum):
+    """Field names for cloudlet resources"""
+    CARBON_INTENSITY_GCO2_PER_KWH = "carbon_intensity_gco2_kwh"
 
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
