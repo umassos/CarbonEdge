@@ -17,6 +17,7 @@ Note that (SINFONIA) denotes elements already provided by original Sinfonia code
 
 ### [ ] Tier-2
 - [ ] RAPL (Intel) energy report as cloudlet resources via Prometheus.
+    - [ ] Write RAPL exporter for Prometheus.
 - [ ] DCGM (NVIDIA) energy report as cloudlet resources via Prometheus.
 - [ ] Carbon trace interface and logic.
     - [ ] Real-time carbon trace.
