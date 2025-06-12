@@ -10,3 +10,7 @@ sinfonia-*.tgz
 __pycache__/
 *~
 *.swp
+
+# Package managers
+
+poetry.lock
