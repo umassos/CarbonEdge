@@ -33,7 +33,6 @@ from .app_common import (
 from .cluster import Cluster
 from .deployment_repository import DeploymentRepository
 from .jobs import scheduler, start_expire_deployments_job, start_reporting_job
-from .openapi import load_spec
 
 
 class Tier2DefaultConfig:
@@ -89,7 +88,7 @@ def tier2_app_factory(**args) -> connexion.FlaskApp:
 
     # add Tier1 APIs
     app.add_api(
-        load_spec(app.specification_dir / "sinfonia_tier2.yaml"),
+        "sinfonia_tier2.yaml",
         resolver=MethodViewResolver("sinfonia.api_tier2"),
         validate_responses=True,
     )

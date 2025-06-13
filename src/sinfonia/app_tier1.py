@@ -36,7 +36,6 @@ from .cloudlets import load as cloudlets_load
 from .deployment_repository import DeploymentRepository
 from .jobs import scheduler, start_expire_cloudlets_job
 from .matchers import Tier1MatchFunction, get_match_function_plugins
-from .openapi import load_spec
 
 
 class Tier1DefaultConfig:
@@ -121,7 +120,7 @@ def wsgi_app_factory(**args) -> connexion.FlaskApp:
 
     # add Tier1 APIs
     app.add_api(
-        load_spec(app.specification_dir / "sinfonia_tier1.yaml"),
+        "sinfonia_tier1.yaml",
         resolver=MethodViewResolver("sinfonia.api_tier1"),
         validate_responses=True,
     )
