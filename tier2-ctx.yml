@@ -1,0 +1,8 @@
+# Server location
+coordinate:  # Amherst, MA
+  latitude: 42.3732
+  longitude: 72.5199
+
+# Electricity Maps auth key (Required for real-time carbon intensity reporting)
+# Sign up for Electricity Maps at https://portal.electricitymaps.com/auth/login 
+electricity-maps-auth-key: <AUTH_KEY>
