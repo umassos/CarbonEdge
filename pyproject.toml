@@ -24,14 +24,14 @@ yarl = "^1.7.2"
 
 # tier 1,2 common dependencies
 attrs = ">=21.3.0"
-connexion = {version = "^2.9.0", extras = ["swagger-ui"]}
-Flask-APScheduler = "^1.12.3"
+connexion = "^3.2.0"
+Flask-APScheduler = "^1.13.1"
 jsonschema-spec = "^0.2.4"
 pendulum = "^3.1.0"
 requests = "^2.26.0"
 
 # tier 1 specific dependencies
-Flask-Executor = "^0.10.0"
+Flask-Executor = "^1.0.0"
 geopy = "^2.2.0"
 importlib-metadata = "^4.12.0"
 maxminddb = "^2.2.0"
@@ -43,16 +43,15 @@ randomname = "^0.1.5"
 wireguard-tools = "^0.4.0"
 zeroconf = "^0.38.7"
 py-rapl = {git = "https://github.com/wkatsak/py-rapl.git"}
-pydantic = "2.5.0"
 dependency-injector = "^4.41.0"
 python-dotenv = {version = "^1.0.1", python = "3.10"}
 pydantic-settings = {version = "^2.1.0", python = "3.10"}
 ansible = {version = "^9.2.0", python = "3.10"}
-locust = {version = "^2.23.1", python = "3.10"}
 pyrapl = "^0.2.3.1"
 pymongo = "^4.6.2"
-pandas = "^2.3.0"
 prance = {extras = ["osv"], version = "^25.4.8.0"}
+pytest = "^8.4.0"
+flask = "^3.1.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
@@ -63,7 +62,6 @@ tbump = "~6.9.0"
 
 [tool.poetry.group.test.dependencies]
 mypy = "^0.961"
-pytest = "^8"
 pytest-mock = "^3.14"
 requests-mock = "^1.9.3"
 types-PyYAML = "^6.0.8"
