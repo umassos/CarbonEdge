@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from src.sinfonia.carbon import RealTimeCarbonIntensityFetcher
+from src.sinfonia.carbonedge_fetcher import RealTimeFetcher
 
 
 class TestRealTimeCarbonIntensityFetcher:
@@ -17,7 +17,7 @@ class TestRealTimeCarbonIntensityFetcher:
 
         mock_get = mocker.patch("requests.get", return_value=mock_resp)
 
-        fetcher = RealTimeCarbonIntensityFetcher(self.token, self.coord)
+        fetcher = RealTimeFetcher(self.token, self.coord)
         result = fetcher.fetch()
 
         assert result == 123.4
@@ -35,7 +35,7 @@ class TestRealTimeCarbonIntensityFetcher:
 
         mock_get = mocker.patch("requests.get", return_value=mock_resp)
 
-        fetcher = RealTimeCarbonIntensityFetcher(self.token, None)
+        fetcher = RealTimeFetcher(self.token, None)
         result = fetcher.fetch()
 
         assert result == 99.9
@@ -51,7 +51,7 @@ class TestRealTimeCarbonIntensityFetcher:
 
         mock_get = mocker.patch("requests.get", return_value=mock_resp)
 
-        fetcher = RealTimeCarbonIntensityFetcher(self.token, self.coord)
+        fetcher = RealTimeFetcher(self.token, self.coord)
 
         with pytest.raises(requests.HTTPError):
             fetcher.fetch()
