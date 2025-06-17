@@ -107,11 +107,6 @@ CLOUDLET_SCHEMA = {
 }
 
 
-class CloudletResourceField(Enum):
-    """Field names for cloudlet resources"""
-    CARBON_INTENSITY_GCO2_PER_KWH = "carbon_intensity_gco2_kwh"
-
-
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 

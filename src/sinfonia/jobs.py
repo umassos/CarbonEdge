@@ -16,6 +16,9 @@ from flask_apscheduler import APScheduler
 from requests.exceptions import RequestException
 from yarl import URL
 
+from .carbonedge_fetcher import RealTimeFetcher, ReplayFetcher
+
+
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -70,7 +73,16 @@ def report_to_tier1_endpoints():
     tier2_endpoint = URL(config["TIER2_URL"]) / "api/v1/deploy"
 
     cluster = config["K8S_CLUSTER"]
+    
     resources = cluster.get_resources()
+
+    if 'CARBONEDGE_REALTIME_FETCHER':
+        fetcher: RealTimeFetcher = config['CARBONEDGE_REALTIME_FETCHER']
+        resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
+    elif 'CARBONEDGE_REPLAY_FETCHER':
+        raise Exception('not yet supported')
+        # fetcher: ReplayFetcher = config['CARBONEDGE_REPLAY_FETCHER']
+        # resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
 
     logging.info("Got %s", str(resources))
 

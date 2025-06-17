@@ -21,7 +21,7 @@ from typing import Callable, Iterator, List, Sequence
 from importlib_metadata import EntryPoint, entry_points
 
 from .client_info import ClientInfo
-from .cloudlets import Cloudlet, CloudletResourceField
+from .cloudlets import Cloudlet
 from .deployment_recipe import DeploymentRecipe
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
@@ -146,8 +146,7 @@ def match_carbon_aware(
     cloudlets: list[Cloudlet],
 ) -> Iterator[Cloudlet]:
     """Yields cloudlet recommendations based on lowest carbon intensity level"""
-    
-    CI_KEY = CloudletResourceField.CARBON_INTENSITY_GCO2_PER_KWH
+    CI_KEY = 'carbon_intensity_gco2_kwh'
 
     # Filter cloudlets with carbon intensity data
     carbon_cloudlets = filter(
