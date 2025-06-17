@@ -82,6 +82,9 @@ def tier2_app_factory(**args) -> connexion.FlaskApp:
             flask_app.config['CARBONEDGE_CONFIG']
         )
 
+        if cfg.coordinate is not None:
+            flask_app.config['CARBONEDGE_COORDINATE'] = cfg.coordinate
+
         flask_app.config['CARBONEDGE_CARBON_INTENSITY_QUERY_MODE'] = cfg.carbon_intensity_query_mode
         
         if cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:

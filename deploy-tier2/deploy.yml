@@ -26,7 +26,7 @@
       cmd: poetry run poe update-deployment-files
       creates: "files/kilo-wg-exporter.yaml"
 
-- hosts: all
+- hosts: localhost
   remote_user: ubuntu
   become_user: root
   become: true
@@ -48,7 +48,7 @@
   - import_tasks: tasks/kube-prometheus-stack.yml
   - import_tasks: tasks/kilo.yml
   - import_tasks: tasks/nvidia_gpu_operator.yml
-  - import_tasks: tasks/kubevirt.yml
+  # - import_tasks: tasks/kubevirt.yml
 
   #- name: configure storage...
 

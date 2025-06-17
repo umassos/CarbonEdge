@@ -31,19 +31,17 @@ MAX_RESULTS = 3
 
 
 class CloudletsView(MethodView):
-    def post(self):
-        print("ZZZZZZ", request.headers)
-
-        body = request.json
+    def post(self, body):
         if not isinstance(body, dict) or "uuid" not in body:
             return "Bad Request, missing UUID", 400
 
         cloudlet = Cloudlet.new_from_api(body)
         cloudlets = current_app.config["cloudlets"]
         cloudlets[cloudlet.uuid] = cloudlet
+
         return NoContent, 204
 
-    def search(self):
+    def get(self):
         cloudlets = current_app.config["cloudlets"]
         return [cloudlet.summary() for cloudlet in cloudlets.values()]
 

@@ -19,14 +19,26 @@
     update_cache: yes
     upgrade: yes
 
-# ansible kubernetes depends on some non-stdlib python modules
+# # ansible kubernetes depends on some non-stdlib python modules
 - name: install python3-pip
   ansible.builtin.apt:
     name: python3-pip
     state: present
 
+# - name: install dependencies for ansible.kubernetes
+#   ansible.builtin.pip:
+#     executable: pip3
+#     name: openshift
+#     state: present
+
+# Prevents polluting global Python package namespace
+# Compatible with Python 3.12+ and Ubuntu 23+
+# - name: Ensure virtualenv is created
+#   ansible.builtin.command:
+#     cmd: python3 -m venv /opt/.carbonedge.venv
+#     creates: /opt/.carbonedge.venv
+
 - name: install dependencies for ansible.kubernetes
-  ansible.builtin.pip:
-    executable: pip3
-    name: openshift
-    state: present
+  ansible.builtin.apt:
+    name: python3-openshift
+    # virtualenv: /opt/.carbonedge.venv

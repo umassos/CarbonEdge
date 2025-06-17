@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+from typing import Tuple
+
 from ipaddress import IPv4Address, IPv6Address, ip_address
 
 import geopy.distance
@@ -75,6 +77,9 @@ class GeoLocation:
     @property
     def coordinate(self) -> tuple[float, float]:
         return (self.latitude, self.longitude)
+    
+    def to_tuple(self) -> Tuple[float, float]:
+        return [self.latitude, self.longitude]
 
     def __sub__(self, other: GeoLocation) -> float:
         """Calculate geographic distance between this and other."""

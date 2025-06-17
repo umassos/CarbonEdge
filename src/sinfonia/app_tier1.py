@@ -40,7 +40,7 @@ from .matchers import Tier1MatchFunction, get_match_function_plugins
 
 class Tier1DefaultConfig:
     CLOUDLETS: str | Path | None = None
-    MATCHERS: list[str] = ["network", "location", "random"]
+    MATCHERS: list[str] = ["network", "location", "random", "carbon-aware"]
     RECIPES: str | Path | URL = "RECIPES"
 
     # These are initialized by the wsgi app factory from the config

@@ -64,29 +64,31 @@ def start_expire_deployments_job():
 
 
 def report_to_tier1_endpoints():
-    print("REPORTINGGG")
-
     config = scheduler.app.config
 
     tier2_uuid = config["UUID"]
     tier2_endpoint = URL(config["TIER2_URL"]) / "api/v1/deploy"
 
     cluster = config["K8S_CLUSTER"]
-    # resources = cluster.get_resources()
-    resources = {}
+    resources = cluster.get_resources()
 
     logging.info("Got %s", str(resources))
+
+    body = {
+        "uuid": str(tier2_uuid),
+        "endpoint": str(tier2_endpoint),
+        "resources": resources,                
+    }
+
+    if 'CARBONEDGE_COORDINATE' in config:
+        body['locations'] = [config['CARBONEDGE_COORDINATE'].to_tuple()]
 
     for tier1_url in config["TIER1_URLS"]:
         tier1_endpoint = URL(tier1_url) / "api/v1/cloudlets/"
         try:
             requests.post(
                 str(tier1_endpoint),
-                json={
-                    "uuid": str(tier2_uuid),
-                    "endpoint": str(tier2_endpoint),
-                    "resources": resources,
-                },
+                json=body,
             )
         except RequestException:
             logging.warning(f"Failed to report to {tier1_endpoint}")
@@ -95,13 +97,14 @@ def report_to_tier1_endpoints():
 def start_reporting_job():
     config = scheduler.app.config
     if not config["TIER1_URLS"] or config["TIER2_URL"] is None:
+        logging.warning('TIER1_URLS and TIER2_URL not configured, skipping reporting job to Tier-1.')
         return
 
     logging.info("Reporting cloudlet status to Tier1 endpoints")
     scheduler.add_job(
         func=report_to_tier1_endpoints,
         trigger="interval",
-        seconds=15,
+        seconds=10,
         max_instances=1,
         coalesce=True,
         id="report_to_tier1",

@@ -333,7 +333,7 @@ class Cloudlet:
             resources=self.resources,
         )
         if self.last_update is not None:
-            summary["last_update"] = str(self.last_update)
+            summary["last_update"] = self.last_update.to_iso8601_string()
         return summary
 
 
