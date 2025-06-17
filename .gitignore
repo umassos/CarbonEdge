@@ -14,3 +14,7 @@ __pycache__/
 # Package managers
 
 poetry.lock
+
+# CarbonEgde
+
+carbonedge*.yaml

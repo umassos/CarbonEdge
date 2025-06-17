@@ -64,13 +64,16 @@ def start_expire_deployments_job():
 
 
 def report_to_tier1_endpoints():
+    print("REPORTINGGG")
+
     config = scheduler.app.config
 
     tier2_uuid = config["UUID"]
     tier2_endpoint = URL(config["TIER2_URL"]) / "api/v1/deploy"
 
     cluster = config["K8S_CLUSTER"]
-    resources = cluster.get_resources()
+    # resources = cluster.get_resources()
+    resources = {}
 
     logging.info("Got %s", str(resources))
 
@@ -86,7 +89,7 @@ def report_to_tier1_endpoints():
                 },
             )
         except RequestException:
-            logging.warn(f"Failed to report to {tier1_endpoint}")
+            logging.warning(f"Failed to report to {tier1_endpoint}")
 
 
 def start_reporting_job():

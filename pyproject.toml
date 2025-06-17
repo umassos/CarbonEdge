@@ -52,6 +52,7 @@ prance = {extras = ["osv"], version = "^25.4.8.0"}
 pytest = "^8.4.0"
 flask = "^3.1.1"
 connexion = {extras = ["flask", "swagger-ui", "uvicorn"], version = "^3.2.0"}
+pydantic = "^2.11.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"

@@ -21,6 +21,7 @@ from .cloudlets import Cloudlet
 from .deployment_recipe import DeploymentRecipe
 from .matchers import tier1_best_match
 
+
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,8 @@ MAX_RESULTS = 3
 
 class CloudletsView(MethodView):
     def post(self):
+        print("ZZZZZZ", request.headers)
+
         body = request.json
         if not isinstance(body, dict) or "uuid" not in body:
             return "Bad Request, missing UUID", 400

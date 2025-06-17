@@ -1,30 +1,30 @@
-from enum import Enum
 from typing import Tuple, Optional
 
 import requests
 
-
-class CarbonIntensityQueryMode(Enum):
-    REALTIME = 'REALTIME'
-    REPLAY = 'REPLAY'
-    OFF = 'OFF'
+from .carbonedge_config import RealTimeConfig, ReplayConfig
+from .geo_location import GeoLocation
 
 
-class RealTimeCarbonIntensityFetcher:
+class RealTimeFetcher:
     ELECTRICITY_MAP_CARBON_INTENSITY_URL = "https://api.electricitymap.org/v3/carbon-intensity/latest"
     
     def __init__(
         self, 
-        auth_token: str,
-        coordinate: Optional[Tuple[float, float]] = None,
+        electricity_maps_auth_token: str,
+        coordinate: Optional[GeoLocation] = None,
     ):
         self._params = dict()
         if coordinate is not None:
             self._params = {"lat": coordinate[0], "lon": coordinate[1]}
 
         self._headers = {
-            "auth-token": auth_token
+            "auth-token": electricity_maps_auth_token
         }
+
+    @classmethod
+    def from_config(cls, cfg: RealTimeConfig):
+        return cls(**cfg.model_dump())
     
     def fetch(self) -> float:
         """Returns latest carbon intensity (gCO2/kWh) from Electricity Maps"""
@@ -38,3 +38,9 @@ class RealTimeCarbonIntensityFetcher:
 
         resp_body = resp.json()
         return resp_body['carbonIntensity']
+    
+
+class ReplayFetcher:
+    @classmethod
+    def from_config(cls, cfg: ReplayConfig):
+        return cls(**cfg.model_dump())
