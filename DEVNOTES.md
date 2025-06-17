@@ -69,10 +69,11 @@ Must-work functionalities in the end-product:
 
 ### Configurable environment variables
 
-- CARBONEDGE_CARBON_INTENSITY_QUERY_MODE = "realtime" | "replay" 
+- CARBONEDGE_CARBON_INTENSITY_QUERY_MODE = "REALTIME" | "REPLAY" | "OFF"
     - How to query carbon intensity data.
-        - "realtime" means querying live data from Electricity Maps.
-        - "replay" means going through carbon trace.
+        - "REALTIME" means querying live data from Electricity Maps.
+        - "REPLAY" means going through carbon trace.
+        - "OFF" means going through carbon trace.
 
 - CARBONEDGE_CONFIG = Path
     - Path to CarbonEdge config file (for now only YAML supported)
