@@ -16,12 +16,12 @@ Note that (SINFONIA) denotes elements already provided by original Sinfonia code
 - [x] Carbon-aware matcher logic and registered as Poetry package.
 
 ### [ ] Tier-2
-- [ ] RAPL (Intel) energy report as cloudlet resources via Prometheus.
-    - [ ] Write RAPL exporter for Prometheus.
+- [x] RAPL (Intel) energy report as cloudlet resources (via Prometheus ?)
+    - [ ] Write RAPL exporter for Prometheus. ?
 - [ ] DCGM (NVIDIA) energy report as cloudlet resources via Prometheus.
 - [ ] Carbon trace interface and logic.
-    - [ ] Real-time carbon trace.
-        - [ ] Get Electricity Maps region code: 
+    - [x] Real-time carbon trace.
+        - [x] Query Electricity Maps: 
             - User-provide (lat-long) > Auto-detect (provided by Electricity Maps)
             - https://portal.electricitymaps.com/docs/api#carbon-intensity-latest
     - [ ] Carbon trace replay.
@@ -40,9 +40,9 @@ TBD
     - [ ] Clock origin at Tier-1.
     - [ ] Tier-1 broadcast clock to Tier-2s.
 
-## [ ] User interface
+## [x] User interface
 - [x] (SINFONIA) Able to select which matchers to use.
-- [ ] Able to select from real-time carbon trace OR trace replay (from repository).
+- [x] Able to select from real-time carbon trace OR trace replay (from repository).
 
 
 ## [ ] Addons (optional)
@@ -69,15 +69,35 @@ Must-work functionalities in the end-product:
 
 ### Configurable environment variables
 
-- CARBON_INTENSITY_QUERY_MODE = "realtime" | "replay" 
+- CARBONEDGE_CARBON_INTENSITY_QUERY_MODE = "realtime" | "replay" 
     - How to query carbon intensity data.
         - "realtime" means querying live data from Electricity Maps.
         - "replay" means going through carbon trace.
+
+- CARBONEDGE_CONFIG = Path
+    - Path to CarbonEdge config file (for now only YAML supported)
 
 - CARBON_TRACE_URI = url | local path
     - Where to locate carbon trace file (must be from Electricity Maps)
     - Either URL or local path.
     - Only active if CARBON_INTENSITY_QUERY_MODE == "replay".
+
+## CarbonEdge config template
+
+```
+coordinate:  # Amherst, MA
+  latitude: 42.3732
+  longitude: 72.5199
+
+carbon_intensity_query_mode: 'REALTIME'
+
+realtime_config:
+  electricity_maps_auth_token: 'ABCXYZ'
+
+replay_config:
+    carbon_intensity_uri: 'XYZABC'
+```
+
 
 ## Questions
 
