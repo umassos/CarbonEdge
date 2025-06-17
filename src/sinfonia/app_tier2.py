@@ -45,6 +45,7 @@ class Tier2DefaultConfig:
     PROMETHEUS: str = "http://kube-prometheus-stack-prometheus.monitoring:9090"
     TIER1_URLS: list[str] = []
     TIER2_URL: str | None = None
+    REPORT_TO_TIER1_INTERVAL_SECONDS: int = 10
 
     # These are initialized by the wsgi app factory from the config
     # UUID: UUID
@@ -76,7 +77,7 @@ def tier2_app_factory(**args) -> connexion.FlaskApp:
 
     # Load CarbonEdge config from file
     if 'CARBONEDGE_CONFIG' in flask_app.config:
-        logging.info('CarbonEdge configuration detected.')
+        logging.info('CarbonEdge config detected.')
 
         cfg = Tier2CarbonEdgeConfig.from_yaml(
             flask_app.config['CARBONEDGE_CONFIG']
@@ -93,7 +94,7 @@ def tier2_app_factory(**args) -> connexion.FlaskApp:
         if cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
             flask_app.config['CARBONEDGE_REPLAY_FETCHER'] = ReplayFetcher.from_config(cfg.replay_config)
     else:
-        logging.info('CarbonEdge configuration not found.')
+        logging.info('CarbonEdge config not found.')
         flask_app.config['CARBONEDGE_CARBON_INTENSITY_QUERY_MODE'] = CarbonIntensityQueryMode.OFF
 
     flask_app.config["UUID"] = uuid4()

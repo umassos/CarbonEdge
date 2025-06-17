@@ -116,7 +116,7 @@ def start_reporting_job():
     scheduler.add_job(
         func=report_to_tier1_endpoints,
         trigger="interval",
-        seconds=10,
+        seconds=config['REPORT_TO_TIER1_INTERVAL_SECONDS'],
         max_instances=1,
         coalesce=True,
         id="report_to_tier1",
