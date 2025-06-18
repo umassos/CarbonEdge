@@ -1,0 +1,43 @@
+from typing import Union, Optional
+
+import csv
+from pathlib import Path
+
+
+class CarbonHistoryCsvLogger:
+    headers = [
+        'timestamp',
+        'tier2-endpoint',
+        'carbon_intensity_gco2_kwh',
+        'energy_use_joules',
+        'carbon_emission_gco2',
+        'cpu_ratio',
+        'mem_ratio',
+    ]
+
+    def __init__(self, path: Union[Path, str]):
+        self._fs = open(path, 'w')
+        self._writer = csv.writer(self._fs)
+
+    def write_row(
+        self,
+        timestamp: int,
+        tier2_endpoint: str,
+        carbon_intensity_gco2_kwh: float,
+        energy_use_joules: float,
+        carbon_emission_gco2: float,
+        cpu_ratio: Optional[float],
+        mem_ratio: Optional[float],
+    ):
+        self._writer.write_row([
+            timestamp,
+            tier2_endpoint,
+            carbon_intensity_gco2_kwh,
+            energy_use_joules,
+            carbon_emission_gco2,
+            cpu_ratio,
+            mem_ratio,
+        ])
+
+    def close(self):
+        self._fs.close()
