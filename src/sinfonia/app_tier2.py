@@ -13,9 +13,9 @@ import socket
 from pathlib import Path
 from uuid import uuid4
 
-import connexion
 import typer
 from attrs import define
+from connexion import FlaskApp
 from connexion.resolver import MethodViewResolver
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.serving import get_interface_ip
@@ -53,9 +53,9 @@ class Tier2DefaultConfig:
     # K8S_CLUSTER : Cluster | None = None   # KUBECONFIG KUBECONTEXT PROMETHEUS
 
 
-def tier2_app_factory(**args) -> connexion.FlaskApp:
+def tier2_app_factory(**args) -> FlaskApp:
     """Sinfonia Tier 2 API server"""
-    app = connexion.FlaskApp(__name__, specification_dir="openapi/")
+    app = FlaskApp(__name__, specification_dir="openapi/")
 
     flask_app = app.app
 
