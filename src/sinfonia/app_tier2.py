@@ -77,7 +77,7 @@ def tier2_app_factory(**args) -> connexion.FlaskApp:
 
     # Load CarbonEdge config from file
     if 'CARBONEDGE_CONFIG' in flask_app.config:
-        logging.info('CarbonEdge config detected.')
+        logging.info('CarbonEdge config detected')
 
         cfg = Tier2CarbonEdgeConfig.from_yaml(
             flask_app.config['CARBONEDGE_CONFIG']
@@ -94,7 +94,7 @@ def tier2_app_factory(**args) -> connexion.FlaskApp:
         if cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
             flask_app.config['CARBONEDGE_REPLAY_FETCHER'] = ReplayFetcher.from_config(cfg.replay_config)
     else:
-        logging.info('CarbonEdge config not found.')
+        logging.info('CarbonEdge config not found')
         flask_app.config['CARBONEDGE_CARBON_INTENSITY_QUERY_MODE'] = CarbonIntensityQueryMode.OFF
 
     flask_app.config["UUID"] = uuid4()
@@ -251,6 +251,7 @@ def tier2_server(
     zeroconf_mdns = ZeroconfMDNS()
     if zeroconf:
         zeroconf_mdns.announce(port)
+
     try:
         app.run(port=port)
     except KeyboardInterrupt:

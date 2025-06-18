@@ -13,8 +13,8 @@ import sys
 from pathlib import Path
 from uuid import UUID
 
-import connexion
 import typer
+from connexion import FlaskApp
 from connexion.resolver import MethodViewResolver
 from flask_executor import Executor
 from geolite2 import geolite2
@@ -85,9 +85,9 @@ def load_match_functions(matchers: list[str]) -> list[Tier1MatchFunction]:
     return match_functions
 
 
-def wsgi_app_factory(**args) -> connexion.FlaskApp:
+def wsgi_app_factory(**args) -> FlaskApp:
     """Sinfonia Tier 1 API server"""
-    app = connexion.FlaskApp(__name__, specification_dir="openapi/")
+    app = FlaskApp(__name__, specification_dir="openapi/")
 
     flask_app = app.app
 
@@ -107,13 +107,16 @@ def wsgi_app_factory(**args) -> connexion.FlaskApp:
 
     # Load CarbonEdge config from file
     if 'CARBONEDGE_CONFIG' in flask_app.config:
-        logging.info('CarbonEdge config detected.')
+        logging.info('CarbonEdge config detected')
         cfg = Tier1CarbonEdgeConfig.from_yaml(
             flask_app.config['CARBONEDGE_CONFIG']
         )
-        flask_app.config['CARBONEDGE_CARBON_LOG_FOLDER_PATH'] = cfg.carbon_log.folder_path
+        flask_app.config['CARBONEDGE_CARBON_LOG_CSV_STREAM'] = open(
+            cfg.carbon_log.folder_path / 'carbon-log.csv',
+            'w'
+        )
     else:
-        logging.info('CarbonEdge config not found.')
+        logging.info('CarbonEdge config not found')
 
     flask_app.config["executor"] = Executor(flask_app)
     flask_app.config["geolite2_reader"] = geolite2.reader()
@@ -149,6 +152,11 @@ def wsgi_app_factory(**args) -> connexion.FlaskApp:
         return ""
 
     return app
+
+
+def resource_cleanup(app: FlaskApp):
+    logging.info('Cleaning up resources')
+    app.app.config['CARBONEDGE_CARBON_LOG_CSV_STREAM'].close()
 
 
 cli = typer.Typer()
@@ -198,4 +206,12 @@ def tier1_server(
         matchers=matchers,
         carbonedge_config=carbonedge_config,
     )
-    app.run(port=port)
+
+    try:
+        app.run(port=port)
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        logging.error(e)
+    finally:
+        resource_cleanup(app)
