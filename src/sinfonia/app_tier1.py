@@ -31,6 +31,7 @@ from .app_common import (
     recipes_option,
     version_option,
 )
+from .carbonedge_config import Tier1CarbonEdgeConfig
 from .cloudlets import Cloudlet
 from .cloudlets import load as cloudlets_load
 from .deployment_repository import DeploymentRepository
@@ -89,12 +90,30 @@ def wsgi_app_factory(**args) -> connexion.FlaskApp:
     app = connexion.FlaskApp(__name__, specification_dir="openapi/")
 
     flask_app = app.app
+
+    # Load default config
     flask_app.config.from_object(Tier1DefaultConfig)
+
+    # Load config from environment file
+    # 'SINFONIA_SETTINGS' is path to environment file
     flask_app.config.from_envvar("SINFONIA_SETTINGS", silent=True)
+
+    # Load config from prefixed environment variable
     flask_app.config.from_prefixed_env(prefix="SINFONIA")
 
+    # Load config from command line arguments
     cmdargs = {k.upper(): v for k, v in args.items() if v}
     flask_app.config.from_mapping(cmdargs)
+
+    # Load CarbonEdge config from file
+    if 'CARBONEDGE_CONFIG' in flask_app.config:
+        logging.info('CarbonEdge config detected.')
+        cfg = Tier1CarbonEdgeConfig.from_yaml(
+            flask_app.config['CARBONEDGE_CONFIG']
+        )
+        flask_app.config['CARBONEDGE_CARBON_LOG_FOLDER_PATH'] = cfg.carbon_log.folder_path
+    else:
+        logging.info('CarbonEdge config not found.')
 
     flask_app.config["executor"] = Executor(flask_app)
     flask_app.config["geolite2_reader"] = geolite2.reader()
@@ -160,8 +179,23 @@ def tier1_server(
         callback=list_match_functions,
         is_eager=True,
         help="Show available best match functions",
+        rich_help_panel='Callbacks'
+    ),
+    carbonedge_config: OptionalPath = typer.Option(
+        None,
+        help="Path to CarbonEdge config file",
+        show_default=False,
+        exists=True,
+        dir_okay=False,
+        resolve_path=True,
+        rich_help_panel="CarbonEdge",
     ),
 ):
     """Run Sinfonia Tier1 with Flask's builtin server (for development)"""
-    app = wsgi_app_factory(cloudlets=cloudlets, recipes=recipes, matchers=matchers)
+    app = wsgi_app_factory(
+        cloudlets=cloudlets, 
+        recipes=recipes, 
+        matchers=matchers,
+        carbonedge_config=carbonedge_config,
+    )
     app.run(port=port)

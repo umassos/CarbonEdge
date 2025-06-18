@@ -11,6 +11,7 @@ __pycache__/
 *~
 *.swp
 
+logs/
 deploy-tier2/k3s-installer.sh
 deploy-tier2/kilo-crds.yaml
 deploy-tier2/kilo-k3s.yaml

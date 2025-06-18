@@ -229,10 +229,10 @@ def tier2_server(
         exists=True,
         dir_okay=False,
         resolve_path=True,
-        rich_help_panel="CarbonEdge config",
+        rich_help_panel="CarbonEdge",
     ),
 ):
-    """Run Sinfonia TIer2 with Flask's builtin server (for development)"""
+    """Run Sinfonia Tier-2 with Flask's builtin server (for development)"""
     try:
         app = tier2_app_factory(
             recipes=recipes,

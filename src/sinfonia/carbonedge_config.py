@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import Union, Optional, Any, Dict, ClassVar
 from pathlib import Path
+from typing import Union, Optional, Any, Dict, ClassVar
 
 import yaml
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    FilePath,
+    field_validator, 
+    model_validator
+)
 from yarl import URL
 
 from .geo_location import GeoLocation
@@ -14,6 +19,42 @@ from .geo_location import GeoLocation
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class CarbonLogConfig(BaseModel):
+    _LOGGING_PFX: ClassVar[str] = 'CarbonLogConfig'
+
+    model_config = {"arbitrary_types_allowed": True}
+    folder_path: Path
+
+    @field_validator('folder_path', mode='before')
+    @classmethod
+    def _validate_folder_path(cls, v: Any):
+        try:
+            path = Path(str(v))
+        except Exception:
+            raise ValueError(f"[{cls._LOGGING_PFX}] invalid folder path value")
+        
+        try:
+            if not path.exists():
+                logging.info(f"Creating carbon log folder at {path.absolute()}")
+            else:
+                logging.info(f"Setting carbon log folder at {path.absolute()}")
+            path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise OSError(f"unable to create folder with error {e}")
+        
+        return path
+
+
+class Tier1CarbonEdgeConfig(BaseModel):
+    carbon_log: CarbonLogConfig
+
+    @classmethod
+    def from_yaml(cls, path: Path) -> Tier1CarbonEdgeConfig:
+        with open(path, 'r') as f:
+            d = yaml.safe_load(f)
+        return cls(**d)
 
 
 class CarbonIntensityQueryMode(Enum):
@@ -28,7 +69,7 @@ class RealTimeConfig(BaseModel):
 
 class ReplayConfig(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
-    trace_uri: Union[Path, URL]
+    trace_uri: Union[FilePath, URL]
 
 
 class Tier2CarbonEdgeConfig(BaseModel):
@@ -56,6 +97,7 @@ class Tier2CarbonEdgeConfig(BaseModel):
             logging.warning(
                 f"[{cls._LOGGING_PFX}] Invalid coordinate config, defaults to 'None'. Error: {e}"
             )
+            return None
 
     @field_validator('carbon_intensity_query_mode', mode='before')
     @classmethod
