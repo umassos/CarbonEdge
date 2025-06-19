@@ -8,6 +8,7 @@
 # SPDX-License-Identifier: MIT
 #
 
+import time
 import logging
 from itertools import chain, filterfalse, islice, zip_longest
 
@@ -16,6 +17,7 @@ from connexion.exceptions import ProblemException
 from flask import current_app, request
 from flask.views import MethodView
 
+from .carbonedge_carbon_history import CarbonHistoryCsvLogger
 from .client_info import ClientInfo
 from .cloudlets import Cloudlet
 from .deployment_recipe import DeploymentRecipe
@@ -38,6 +40,20 @@ class CloudletsView(MethodView):
         cloudlet = Cloudlet.new_from_api(body)
         cloudlets = current_app.config["cloudlets"]
         cloudlets[cloudlet.uuid] = cloudlet
+
+        if 'CARBONEDGE_CARBON_HISTORY_CSV_LOGGER' in current_app.config:
+            resources = cloudlet.resources
+
+            logger: CarbonHistoryCsvLogger = current_app.config['CARBONEDGE_CARBON_HISTORY_CSV_LOGGER']
+            logger.write_row(
+                timestamp=int(time.time()),
+                tier2_endpoint=cloudlet.endpoint,
+                carbon_intensity_gco2_kwh=resources['carbon_intensity_gco2_kwh'],
+                energy_use_joules=-1,
+                carbon_emission_gco2=-1,
+                cpu_ratio=resources['cpu_ratio'],
+                mem_ratio=resources['mem_ratio'],
+            )
 
         return NoContent, 204
 

@@ -31,7 +31,7 @@ from .app_common import (
     recipes_option,
     version_option,
 )
-from .carbonedge_carbon_log import CarbonHistoryCsvLogger
+from .carbonedge_carbon_history import CarbonHistoryCsvLogger
 from .carbonedge_config import Tier1CarbonEdgeConfig
 from .cloudlets import Cloudlet
 from .cloudlets import load as cloudlets_load
@@ -114,8 +114,9 @@ def wsgi_app_factory(**args) -> FlaskApp:
             flask_app.config['CARBONEDGE_CONFIG']
         )
 
-        carbon_history_path = cfg.carbon_log.folder_path / 'carbon-log.csv'
-        flask_app.config['CARBONEDGE_CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(carbon_history_path)
+        flask_app.config['CARBONEDGE_CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
+            cfg.carbon_log.folder_path
+        )
     else:
         logging.info('CarbonEdge config not found')
 

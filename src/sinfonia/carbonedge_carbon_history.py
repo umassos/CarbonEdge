@@ -15,8 +15,8 @@ class CarbonHistoryCsvLogger:
         'mem_ratio',
     ]
 
-    def __init__(self, path: Union[Path, str]):
-        self._fs = open(path, 'w')
+    def __init__(self, folder_path: Union[Path, str]):
+        self._fs = open(Path(folder_path) / 'carbon-history.csv', 'w')
         self._writer = csv.writer(self._fs)
 
     def write_row(
@@ -29,7 +29,7 @@ class CarbonHistoryCsvLogger:
         cpu_ratio: Optional[float],
         mem_ratio: Optional[float],
     ):
-        self._writer.write_row([
+        self._writer.writerow([
             timestamp,
             tier2_endpoint,
             carbon_intensity_gco2_kwh,

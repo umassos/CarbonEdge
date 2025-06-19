@@ -14,6 +14,7 @@ Note that (SINFONIA) denotes elements already provided by original Sinfonia code
 
 ### [ ] Tier-1
 - [x] Carbon-aware matcher logic and registered as Poetry package.
+- [x] CarbonEdge config 
 
 ### [ ] Tier-2
 - [x] RAPL (Intel) energy report as cloudlet resources (via Prometheus ?)
@@ -27,6 +28,7 @@ Note that (SINFONIA) denotes elements already provided by original Sinfonia code
     - [ ] Carbon trace replay.
         - [ ] Pull trace from repo.
         - [ ] Parse trace file.
+- [x] CarbonEdge config 
 
 ### [ ] Tier-3
 TBD
