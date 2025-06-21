@@ -76,12 +76,12 @@ def report_to_tier1_endpoints():
     
     resources = cluster.get_resources()
 
-    if 'CARBONEDGE_REALTIME_FETCHER':
-        fetcher: RealTimeFetcher = config['CARBONEDGE_REALTIME_FETCHER']
+    if 'CARBON_REALTIME_FETCHER':
+        fetcher: RealTimeFetcher = config['CARBON_REALTIME_FETCHER']
         resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
-    elif 'CARBONEDGE_REPLAY_FETCHER':
+    elif 'CARBON_REPLAY_FETCHER':
         raise Exception('not yet supported')
-        # fetcher: ReplayFetcher = config['CARBONEDGE_REPLAY_FETCHER']
+        # fetcher: ReplayFetcher = config['CARBON_REPLAY_FETCHER']
         # resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
 
     logging.info("Got %s", str(resources))
@@ -92,8 +92,8 @@ def report_to_tier1_endpoints():
         "resources": resources,                
     }
 
-    if 'CARBONEDGE_COORDINATE' in config:
-        body['locations'] = [config['CARBONEDGE_COORDINATE'].to_tuple()]
+    if 'COORDINATE' in config:
+        body['locations'] = [config['COORDINATE'].to_tuple()]
 
     for tier1_url in config["TIER1_URLS"]:
         tier1_endpoint = URL(tier1_url) / "api/v1/cloudlets/"

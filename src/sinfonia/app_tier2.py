@@ -67,13 +67,16 @@ def tier2_app_factory(**args) -> FlaskApp:
     flask_app.config.from_envvar("SINFONIA_SETTINGS", silent=True)
 
     # Load config from prefixed environment variables
-    flask_app.config.from_prefixed_env(prefix="SINFONIA")
+    flask_app.config.from_prefixed_env(prefix='SINFONIA')
     if flask_app.config.get("TIER1_URL"):
         flask_app.config["TIER1_URLS"] = [flask_app.config["TIER1_URL"]]
 
     # Load config from command line argument
     cmdargs = {k.upper(): v for k, v in args.items() if v}
     flask_app.config.from_mapping(cmdargs)
+
+    # Load CarbonEdge config from prefixed environment variables
+    flask_app.config.from_prefixed_env(prefix='CARBONEDGE')
 
     # Load CarbonEdge config from file
     if 'CARBONEDGE_CONFIG' in flask_app.config:
@@ -84,18 +87,18 @@ def tier2_app_factory(**args) -> FlaskApp:
         )
 
         if cfg.coordinate is not None:
-            flask_app.config['CARBONEDGE_COORDINATE'] = cfg.coordinate
+            flask_app.config['COORDINATE'] = cfg.coordinate
 
-        flask_app.config['CARBONEDGE_CARBON_INTENSITY_QUERY_MODE'] = cfg.carbon_intensity_query_mode
+        flask_app.config['CARBON_INTENSITY_QUERY_MODE'] = cfg.carbon_intensity_query_mode
         
         if cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:
-            flask_app.config['CARBONEDGE_REALTIME_FETCHER'] = RealTimeFetcher.from_config(cfg.realtime_config)
+            flask_app.config['CARBON_REALTIME_FETCHER'] = RealTimeFetcher.from_config(cfg.realtime_config)
 
         if cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
-            flask_app.config['CARBONEDGE_REPLAY_FETCHER'] = ReplayFetcher.from_config(cfg.replay_config)
+            flask_app.config['CARBON_REPLAY_FETCHER'] = ReplayFetcher.from_config(cfg.replay_config)
     else:
         logging.info('CarbonEdge config not found')
-        flask_app.config['CARBONEDGE_CARBON_INTENSITY_QUERY_MODE'] = CarbonIntensityQueryMode.OFF
+        flask_app.config['CARBON_INTENSITY_QUERY_MODE'] = CarbonIntensityQueryMode.OFF
 
     flask_app.config["UUID"] = uuid4()
     flask_app.config["deployment_repository"] = DeploymentRepository(

@@ -41,10 +41,10 @@ class CloudletsView(MethodView):
         cloudlets = current_app.config["cloudlets"]
         cloudlets[cloudlet.uuid] = cloudlet
 
-        if 'CARBONEDGE_CARBON_HISTORY_CSV_LOGGER' in current_app.config:
+        if 'CARBON_HISTORY_CSV_LOGGER' in current_app.config:
             resources = cloudlet.resources
 
-            logger: CarbonHistoryCsvLogger = current_app.config['CARBONEDGE_CARBON_HISTORY_CSV_LOGGER']
+            logger: CarbonHistoryCsvLogger = current_app.config['CARBON_HISTORY_CSV_LOGGER']
             logger.write_row(
                 timestamp=int(time.time()),
                 tier2_endpoint=cloudlet.endpoint,

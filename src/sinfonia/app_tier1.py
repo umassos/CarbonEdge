@@ -114,7 +114,7 @@ def wsgi_app_factory(**args) -> FlaskApp:
             flask_app.config['CARBONEDGE_CONFIG']
         )
 
-        flask_app.config['CARBONEDGE_CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
+        flask_app.config['CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
             cfg.carbon_log.folder_path
         )
     else:
@@ -158,7 +158,7 @@ def wsgi_app_factory(**args) -> FlaskApp:
 
 def resource_cleanup(app: FlaskApp):
     logging.info('Cleaning up resources')
-    app.app.config['CARBONEDGE_CARBON_HISTORY_CSV_LOGGER'].close()
+    app.app.config['CARBON_HISTORY_CSV_LOGGER'].close()
 
 
 cli = typer.Typer()

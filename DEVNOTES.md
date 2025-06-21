@@ -71,7 +71,7 @@ Must-work functionalities in the end-product:
 
 ### Configurable environment variables
 
-- CARBONEDGE_CARBON_INTENSITY_QUERY_MODE = "REALTIME" | "REPLAY" | "OFF"
+- CARBON_INTENSITY_QUERY_MODE = "REALTIME" | "REPLAY" | "OFF"
     - How to query carbon intensity data.
         - "REALTIME" means querying live data from Electricity Maps.
         - "REPLAY" means going through carbon trace.
