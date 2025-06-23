@@ -1,11 +1,11 @@
-from typing import Union, Optional
+from typing import Union, Optional, ClassVar
 
 import csv
 from pathlib import Path
 
 
 class CarbonHistoryCsvLogger:
-    headers = [
+    _HEADERS: ClassVar = [
         'timestamp',
         'tier2-endpoint',
         'carbon_intensity_gco2_kwh',
@@ -38,6 +38,9 @@ class CarbonHistoryCsvLogger:
             cpu_ratio,
             mem_ratio,
         ])
+
+    def write_headers(self):
+        self._writer.writerow(self._HEADERS)
 
     def close(self):
         self._fs.close()

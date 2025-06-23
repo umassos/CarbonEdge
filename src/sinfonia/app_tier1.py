@@ -124,6 +124,8 @@ def wsgi_app_factory(**args) -> FlaskApp:
         flask_app.config['CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
             ce_cfg.carbon_log_folder_path
         )
+
+        flask_app.config['CARBON_HISTORY_CSV_LOGGER'].write_headers()
     else:
         logging.info('CarbonEdge disabled')
 
