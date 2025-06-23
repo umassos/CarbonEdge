@@ -1,8 +1,9 @@
 from typing import Tuple, Optional
+from pathlib import Path
 
 import requests
+from yarl import URL
 
-from .carbonedge_config import RealTimeConfig, ReplayConfig
 from .geo_location import GeoLocation
 
 
@@ -16,15 +17,14 @@ class RealTimeFetcher:
     ):
         self._params = dict()
         if coordinate is not None:
-            self._params = {"lat": coordinate[0], "lon": coordinate[1]}
+            self._params = {
+                "lat": coordinate.latitude, 
+                "lon": coordinate.longitude
+            }
 
         self._headers = {
             "auth-token": electricity_maps_auth_token
         }
-
-    @classmethod
-    def from_config(cls, cfg: RealTimeConfig):
-        return cls(**cfg.model_dump())
     
     def fetch(self) -> float:
         """Returns latest carbon intensity (gCO2/kWh) from Electricity Maps"""
@@ -41,6 +41,5 @@ class RealTimeFetcher:
     
 
 class ReplayFetcher:
-    @classmethod
-    def from_config(cls, cfg: ReplayConfig):
-        return cls(**cfg.model_dump())
+    def __init__(self, carbon_trace_uri: Path | URL):
+        raise NotImplementedError()

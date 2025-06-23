@@ -40,6 +40,10 @@ from .jobs import scheduler, start_expire_cloudlets_job
 from .matchers import Tier1MatchFunction, get_match_function_plugins
 
 
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
 class Tier1DefaultConfig:
     CLOUDLETS: str | Path | None = None
     MATCHERS: list[str] = ["network", "location", "random", "carbon-aware"]
@@ -106,19 +110,22 @@ def wsgi_app_factory(**args) -> FlaskApp:
     cmdargs = {k.upper(): v for k, v in args.items() if v}
     flask_app.config.from_mapping(cmdargs)
 
-    # Load CarbonEdge config from file
+    # Load CarbonEdge config from environment variables
     if 'CARBONEDGE_CONFIG' in flask_app.config:
-        logging.info('CarbonEdge config detected')
+        ce_cfg_path = flask_app.config['CARBONEDGE_CONFIG']
+        ce_cfg = Tier1CarbonEdgeConfig.from_env_file(ce_cfg_path)
+    else:
+        ce_cfg = Tier1CarbonEdgeConfig()
 
-        cfg = Tier1CarbonEdgeConfig.from_yaml(
-            flask_app.config['CARBONEDGE_CONFIG']
-        )
+    if ce_cfg.is_carbonedge_enabled():
+        logging.info('CarbonEdge enabled')
+        logging.info(ce_cfg.model_dump())
 
         flask_app.config['CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
-            cfg.carbon_log.folder_path
+            ce_cfg.carbon_log_folder_path
         )
     else:
-        logging.info('CarbonEdge config not found')
+        logging.info('CarbonEdge disabled')
 
     flask_app.config["executor"] = Executor(flask_app)
     flask_app.config["geolite2_reader"] = geolite2.reader()
@@ -158,7 +165,9 @@ def wsgi_app_factory(**args) -> FlaskApp:
 
 def resource_cleanup(app: FlaskApp):
     logging.info('Cleaning up resources')
-    app.app.config['CARBON_HISTORY_CSV_LOGGER'].close()
+
+    if 'CARBON_HISTORY_CSV_LOGGER' in app.app.config:
+        app.app.config['CARBON_HISTORY_CSV_LOGGER'].close()
 
 
 cli = typer.Typer()

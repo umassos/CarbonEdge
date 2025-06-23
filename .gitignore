@@ -10,6 +10,7 @@ sinfonia-*.tgz
 __pycache__/
 *~
 *.swp
+*.env
 
 logs/
 deploy-tier2/k3s-installer.sh

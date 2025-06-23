@@ -48,11 +48,11 @@ class CloudletsView(MethodView):
             logger.write_row(
                 timestamp=int(time.time()),
                 tier2_endpoint=cloudlet.endpoint,
-                carbon_intensity_gco2_kwh=resources['carbon_intensity_gco2_kwh'],
+                carbon_intensity_gco2_kwh=resources.get('carbon_intensity_gco2_kwh'),
                 energy_use_joules=-1,
                 carbon_emission_gco2=-1,
-                cpu_ratio=resources['cpu_ratio'],
-                mem_ratio=resources['mem_ratio'],
+                cpu_ratio=resources.get('cpu_ratio'),
+                mem_ratio=resources.get('mem_ratio'),
             )
 
         return NoContent, 204

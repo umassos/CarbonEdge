@@ -44,7 +44,6 @@ zeroconf = "^0.38.7"
 py-rapl = {git = "https://github.com/wkatsak/py-rapl.git"}
 dependency-injector = "^4.41.0"
 python-dotenv = {version = "^1.0.1", python = "3.10"}
-pydantic-settings = {version = "^2.1.0", python = "3.10"}
 ansible = {version = "^9.2.0", python = "3.10"}
 pyrapl = "^0.2.3.1"
 pymongo = "^4.6.2"
@@ -53,6 +52,7 @@ pytest = "^8.4.0"
 flask = "^3.1.1"
 connexion = {extras = ["flask", "swagger-ui", "uvicorn"], version = "^3.2.0"}
 pydantic = "^2.11.7"
+pydantic-settings = "^2.10.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"

@@ -38,6 +38,10 @@ from .deployment_repository import DeploymentRepository
 from .jobs import scheduler, start_expire_deployments_job, start_reporting_job
 
 
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
 class Tier2DefaultConfig:
     RECIPES: str | Path | URL = "RECIPES"
     KUBECONFIG: str = ""
@@ -45,7 +49,7 @@ class Tier2DefaultConfig:
     PROMETHEUS: str = "http://kube-prometheus-stack-prometheus.monitoring:9090"
     TIER1_URLS: list[str] = []
     TIER2_URL: str | None = None
-    REPORT_TO_TIER1_INTERVAL_SECONDS: int = 10
+    REPORT_TO_TIER1_INTERVAL_SECONDS: int = 15
 
     # These are initialized by the wsgi app factory from the config
     # UUID: UUID
@@ -75,31 +79,6 @@ def tier2_app_factory(**args) -> FlaskApp:
     cmdargs = {k.upper(): v for k, v in args.items() if v}
     flask_app.config.from_mapping(cmdargs)
 
-    # Load CarbonEdge config from prefixed environment variables
-    flask_app.config.from_prefixed_env(prefix='CARBONEDGE')
-
-    # Load CarbonEdge config from file
-    if 'CARBONEDGE_CONFIG' in flask_app.config:
-        logging.info('CarbonEdge config detected')
-
-        cfg = Tier2CarbonEdgeConfig.from_yaml(
-            flask_app.config['CARBONEDGE_CONFIG']
-        )
-
-        if cfg.coordinate is not None:
-            flask_app.config['COORDINATE'] = cfg.coordinate
-
-        flask_app.config['CARBON_INTENSITY_QUERY_MODE'] = cfg.carbon_intensity_query_mode
-        
-        if cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:
-            flask_app.config['CARBON_REALTIME_FETCHER'] = RealTimeFetcher.from_config(cfg.realtime_config)
-
-        if cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
-            flask_app.config['CARBON_REPLAY_FETCHER'] = ReplayFetcher.from_config(cfg.replay_config)
-    else:
-        logging.info('CarbonEdge config not found')
-        flask_app.config['CARBON_INTENSITY_QUERY_MODE'] = CarbonIntensityQueryMode.OFF
-
     flask_app.config["UUID"] = uuid4()
     flask_app.config["deployment_repository"] = DeploymentRepository(
         flask_app.config["RECIPES"]
@@ -122,6 +101,30 @@ def tier2_app_factory(**args) -> FlaskApp:
 
     # handle running behind reverse proxy (should this be made configurable?)
     flask_app.wsgi_app = ProxyFix(flask_app.wsgi_app)
+
+   # Load CarbonEdge config from environment variables
+    if 'CARBONEDGE_CONFIG' in flask_app.config:
+        ce_cfg_path = flask_app.config['CARBONEDGE_CONFIG']
+        ce_cfg = Tier2CarbonEdgeConfig.from_env_file(ce_cfg_path)
+    else:
+        ce_cfg = Tier2CarbonEdgeConfig()
+
+    if ce_cfg.is_carbonedge_enabled():
+        logging.info('CarbonEdge enabled')
+        logging.info(ce_cfg.model_dump())
+    else:
+        logging.info('CarbonEdge disabled')
+
+    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:
+        flask_app.config['CARBON_REALTIME_FETCHER'] = RealTimeFetcher(
+            electricity_maps_auth_token=ce_cfg.realtime_electricity_maps_auth_token,
+            coordinate=ce_cfg.coordinate,
+        )
+
+    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
+        flask_app.config['CARBON_REPLAY_FETCHER'] = ReplayFetcher(
+            carbon_trace_uri=ce_cfg.replay_carbon_trace_uri
+        )
 
     # add Tier1 APIs
     app.add_api(
@@ -232,7 +235,7 @@ def tier2_server(
         exists=True,
         dir_okay=False,
         resolve_path=True,
-        rich_help_panel="CarbonEdge",
+        rich_help_panel="Config",
     ),
 ):
     """Run Sinfonia Tier-2 with Flask's builtin server (for development)"""
