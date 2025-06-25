@@ -17,8 +17,8 @@ WORKDIR /app
 
 FROM base as builder
 
-ENV KUBECTL_VERSION=v1.23.2 \
-    HELM_VERSION=v3.8.0
+ENV KUBECTL_VERSION=v1.33.1 \
+    HELM_VERSION=v3.18.3
 
 RUN apt-get update && apt-get install --no-install-recommends -y curl git \
  && apt-get clean -y && rm -rf /var/lib/apt/lists/* \
@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y curl git \
 ENV PIP_DEFAULT_TIMEOUT=100 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
-    POETRY_VERSION=1.2.2 \
+    POETRY_VERSION=2.1.3 \
     POETRY_NO_INTERACTION=1
 
 RUN pip install "poetry==$POETRY_VERSION" \
