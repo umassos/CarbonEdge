@@ -13,6 +13,7 @@ import socket
 from pathlib import Path
 from uuid import uuid4
 
+import flask
 import typer
 from attrs import define
 from connexion import FlaskApp
@@ -33,6 +34,7 @@ from .app_common import (
 )
 from .carbonedge_config import Tier2CarbonEdgeConfig, CarbonIntensityQueryMode
 from .carbonedge_fetcher import RealTimeFetcher, ReplayFetcher
+from .carbonedge_energy_monitor import RAPLEnergyDelta
 from .cluster import Cluster
 from .deployment_repository import DeploymentRepository
 from .jobs import scheduler, start_expire_deployments_job, start_reporting_job
@@ -55,6 +57,24 @@ class Tier2DefaultConfig:
     # UUID: UUID
     # deployment_repository: DeploymentRepository | None = None     # RECIPES
     # K8S_CLUSTER : Cluster | None = None   # KUBECONFIG KUBECONTEXT PROMETHEUS
+
+
+def init_carbonedge(
+        flask_cfg: flask.Config,
+        ce_cfg: Tier2CarbonEdgeConfig
+):
+    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:
+        flask_cfg['CARBON_REALTIME_FETCHER'] = RealTimeFetcher(
+            electricity_maps_auth_token=ce_cfg.realtime_electricity_maps_auth_token,
+            coordinate=ce_cfg.coordinate,
+        )
+
+    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
+        flask_cfg['CARBON_REPLAY_FETCHER'] = ReplayFetcher(
+            carbon_trace_uri=ce_cfg.replay_carbon_trace_uri
+        )
+
+    flask_cfg['RAPL_ENERGY_DELTA'] = RAPLEnergyDelta()
 
 
 def tier2_app_factory(**args) -> FlaskApp:
@@ -110,21 +130,13 @@ def tier2_app_factory(**args) -> FlaskApp:
         ce_cfg = Tier2CarbonEdgeConfig()
 
     if ce_cfg.is_carbonedge_enabled():
+        flask_app.config['CARBONEDGE_ENABLED'] = True
+        init_carbonedge(flask_app.config, ce_cfg)
         logging.info('CarbonEdge enabled')
         logging.info(ce_cfg.model_dump())
     else:
+        flask_app.config['CARBONEDGE_ENABLED'] = False
         logging.info('CarbonEdge disabled')
-
-    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:
-        flask_app.config['CARBON_REALTIME_FETCHER'] = RealTimeFetcher(
-            electricity_maps_auth_token=ce_cfg.realtime_electricity_maps_auth_token,
-            coordinate=ce_cfg.coordinate,
-        )
-
-    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
-        flask_app.config['CARBON_REPLAY_FETCHER'] = ReplayFetcher(
-            carbon_trace_uri=ce_cfg.replay_carbon_trace_uri
-        )
 
     # add Tier1 APIs
     app.add_api(

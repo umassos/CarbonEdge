@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 from uuid import UUID
 
+import flask
 import typer
 from connexion import FlaskApp
 from connexion.resolver import MethodViewResolver
@@ -42,6 +43,18 @@ from .matchers import Tier1MatchFunction, get_match_function_plugins
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+
+def init_carbonedge(
+        flask_cfg: flask.Config,
+        ce_cfg: Tier1CarbonEdgeConfig
+):
+    flask_cfg['CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
+        ce_cfg.carbon_log_folder_path
+    )
+
+    flask_cfg['CARBON_HISTORY_CSV_LOGGER'].write_headers()
+
 
 
 class Tier1DefaultConfig:
@@ -118,15 +131,12 @@ def wsgi_app_factory(**args) -> FlaskApp:
         ce_cfg = Tier1CarbonEdgeConfig()
 
     if ce_cfg.is_carbonedge_enabled():
+        flask_app.config['CARBONEDGE_ENABLED'] = True
+        init_carbonedge(flask_app.config, ce_cfg)
         logging.info('CarbonEdge enabled')
         logging.info(ce_cfg.model_dump())
-
-        flask_app.config['CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
-            ce_cfg.carbon_log_folder_path
-        )
-
-        flask_app.config['CARBON_HISTORY_CSV_LOGGER'].write_headers()
     else:
+        flask_app.config['CARBONEDGE_ENABLED'] = False
         logging.info('CarbonEdge disabled')
 
     flask_app.config["executor"] = Executor(flask_app)

@@ -17,6 +17,7 @@ from requests.exceptions import RequestException
 from yarl import URL
 
 from .carbonedge_fetcher import RealTimeFetcher, ReplayFetcher
+from .carbonedge_energy_monitor import RAPLEnergyDelta
 
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
@@ -66,6 +67,27 @@ def start_expire_deployments_job():
     )
 
 
+def inject_carbon_data(resources, config):
+    # Carbon intensity
+    if 'CARBON_REALTIME_FETCHER':
+        fetcher: RealTimeFetcher = config['CARBON_REALTIME_FETCHER']
+        resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
+    elif 'CARBON_REPLAY_FETCHER':
+        raise Exception('not yet supported')
+        # fetcher: ReplayFetcher = config['CARBON_REPLAY_FETCHER']
+        # resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
+
+    # Energy use
+    energy_delta: RAPLEnergyDelta = config['RAPL_ENERGY_DELTA']
+    energy_delta.sample()
+    resources['energy_use_kwh'] = energy_delta.get_energy_kwh()
+
+    # Carbon emission
+    ci = resources['carbon_intensity_gco2_kwh']
+    eu = resources['energy_use_kwh']
+    resources['carbon_emission_gco2'] = ci * eu
+
+
 def report_to_tier1_endpoints():
     config = scheduler.app.config
 
@@ -75,14 +97,8 @@ def report_to_tier1_endpoints():
     cluster = config["K8S_CLUSTER"]
     
     resources = cluster.get_resources()
-
-    if 'CARBON_REALTIME_FETCHER':
-        fetcher: RealTimeFetcher = config['CARBON_REALTIME_FETCHER']
-        resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
-    elif 'CARBON_REPLAY_FETCHER':
-        raise Exception('not yet supported')
-        # fetcher: ReplayFetcher = config['CARBON_REPLAY_FETCHER']
-        # resources['carbon_intensity_gco2_kwh'] = fetcher.fetch()
+    if config['CARBONEDGE_ENABLED']:
+        inject_carbon_data(resources, config)
 
     logging.info("Got %s", str(resources))
 
