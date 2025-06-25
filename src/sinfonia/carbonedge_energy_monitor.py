@@ -8,7 +8,7 @@ import rapl
 
 class RAPLEnergyDelta:
     """Get energy usage since last invocation"""
-    def __init__(self, sample_sec: int):
+    def __init__(self):
         self._s_bef = rapl.RAPLMonitor.sample()
         self._energy_joules = 0
 
