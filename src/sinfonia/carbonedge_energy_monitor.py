@@ -15,12 +15,13 @@ class RAPLEnergyDelta:
     def sample(self):
         """Take a new energy sample and compute delta from last sample"""
         s_now = rapl.RAPLMonitor.sample()
-        diff = self._s_bef - s_now
+        diff = s_now - self._s_bef
 
         eu_sum = 0
         for domain in diff.domains.values():
             eu_sum += diff.energy(package=domain.name, unit=rapl.JOULES)
 
+        self._s_bef = s_now
         self._delta_energy_joules = eu_sum
 
     def get_energy_joules(self):

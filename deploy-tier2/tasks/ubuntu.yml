@@ -25,11 +25,11 @@
     name: python3-pip
     state: present
 
-# - name: install dependencies for ansible.kubernetes
-#   ansible.builtin.pip:
-#     executable: pip3
-#     name: openshift
-#     state: present
+- name: install dependencies for ansible.kubernetes
+  ansible.builtin.pip:
+    executable: pip3
+    name: openshift
+    state: present
 
 # Prevents polluting global Python package namespace
 # Compatible with Python 3.12+ and Ubuntu 23+
@@ -38,7 +38,8 @@
 #     cmd: python3 -m venv /opt/.carbonedge.venv
 #     creates: /opt/.carbonedge.venv
 
-- name: install dependencies for ansible.kubernetes
-  ansible.builtin.apt:
-    name: python3-openshift
-    # virtualenv: /opt/.carbonedge.venv
+# Compatible with Python 3.12+ and Ubuntu 23+
+# - name: install dependencies for ansible.kubernetes
+#   ansible.builtin.apt:
+#     name: python3-openshift
+#     # virtualenv: /opt/.carbonedge.venv
