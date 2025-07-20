@@ -164,7 +164,7 @@ def wsgi_app_factory(**args) -> FlaskApp:
     # add Tier1 APIs
     app.add_api(
         "sinfonia_tier1.yaml",
-        resolver=MethodViewResolver("sinfonia.api_tier1"),
+        resolver=MethodViewResolver("src.sinfonia.api_tier1"),
         validate_responses=True,
     )
 
@@ -231,7 +231,7 @@ def tier1_server(
     )
 
     try:
-        app.run(port=port)
+        app.run(host='0.0.0.0', port=port)
     except KeyboardInterrupt:
         pass
     except Exception as e:

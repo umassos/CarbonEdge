@@ -1,0 +1,4 @@
+tier2hosts:
+  localhost:
+    ansible_host: "localhost"
+    # sinfonia_tier2_url: "https://localhost:5001"

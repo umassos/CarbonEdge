@@ -141,7 +141,7 @@ def tier2_app_factory(**args) -> FlaskApp:
     # add Tier1 APIs
     app.add_api(
         "sinfonia_tier2.yaml",
-        resolver=MethodViewResolver("sinfonia.api_tier2"),
+        resolver=MethodViewResolver("src.sinfonia.api_tier2"),
         validate_responses=True,
     )
 
@@ -271,7 +271,7 @@ def tier2_server(
         zeroconf_mdns.announce(port)
 
     try:
-        app.run(port=port)
+        app.run(host='0.0.0.0', port=port)
     except KeyboardInterrupt:
         pass
     except Exception as e:

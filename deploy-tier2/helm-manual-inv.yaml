@@ -1,0 +1,10 @@
+image:
+  tag: dev2
+
+sinfoniaTier1Url: http://localhost:5000
+sinfoniaTier2Url: http://localhost:5001
+
+carbonedgeTier2Latitude: "42.3757"
+carbonedgeTier2Longitude: "-72.5199"
+carbonedgeTier2CarbonIntensityQueryMode: REALTIME
+carbonedgeTier2ElectricityMapsAuthToken: NchuMpRvQR95S

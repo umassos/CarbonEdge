@@ -32,10 +32,20 @@
   become: true
 
   vars:
-    sinfonia_tier1_url: "{{ lookup('env', 'SINFONIA_TIER1_URL') }}"
-    sinfonia_tier2_url: "http://{{ inventory_hostname }}"
+    sinfonia_tier1_url: "https://localhost:5000"
     #sinfonia_recipes: "https://storage.cmusatyalab.org/sinfonia-recipes/"
     sinfonia_recipes: ""
+    carbonedge_tier2_electricity_maps_auth_token: "NchuMpRvQR95S"
+    carbonedge_tier2_carbon_intensity_query_mode: "REALTIME"
+
+    # sinfonia_tier2_url: "{{ hostvars[inventory_hostname].sinfonia_tier2_url }}"
+    # carbonedge_tier2_latitude: "{{ hostvars[inventory_hostname].carbonedge_tier2_latitude }}"
+    # carbonedge_tier2_longitude: "{{ hostvars[inventory_hostname].carbonedge_tier2_longitude }}"
+
+    # sinfonia_tier2_url: "{{ hostvars[inventory_hostname].sinfonia_tier2_url }}"
+    carbonedge_tier2_latitude: "42.3757"
+    carbonedge_tier2_longitude: "-72.5199"
+
     enable_ufw: false
     override_resolv_conf: true
 
@@ -64,11 +74,16 @@
           namespace: kube-system
         spec:
           chart: sinfonia
-          repo: https://cmusatyalab.github.io/sinfonia
+          repo: https://k2nt.github.io/helm/carbonedge
           targetNamespace: default
           valuesContent: |-
             sinfoniaTier1Url: "{{ sinfonia_tier1_url }}"
-            sinfoniaTier2Url: "{{ sinfonia_tier2_url }}"
+            sinfoniaTier2Url: "http://localhost:5001"
             sinfoniaRecipes: "{{ sinfonia_recipes }}"
+            carbonedgeTier2Latitude: "{{ carbonedge_tier2_latitude }}"
+            carbonedgeTier2Longitude: "{{ carbonedge_tier2_longitude }}"
             ingress:
               className: traefik
+            image:
+              repository: k2nt/carbonedge
+              tag: dev2
