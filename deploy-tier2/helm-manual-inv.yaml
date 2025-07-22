@@ -7,4 +7,4 @@ sinfoniaTier2Url: http://192.168.245.26:30051
 carbonedgeTier2Latitude: "42.3757"
 carbonedgeTier2Longitude: "-72.5199"
 carbonedgeTier2CarbonIntensityQueryMode: REALTIME
-carbonedgeTier2ElectricityMapsAuthToken: NchuMpRvQR95S
+carbonedgeTier2ElectricityMapsAuthToken: ""
