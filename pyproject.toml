@@ -57,7 +57,7 @@ pydantic-settings = "^2.10.0"
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
 jsonpatch = "^1.32"
-poethepoet = "^0.16.5"
+poethepoet = "^0.36.0"
 pre-commit = "^2.16.0"
 tbump = "~6.9.0"
 

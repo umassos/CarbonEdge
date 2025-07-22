@@ -1,0 +1,13 @@
+tier2hosts:
+  hosts:
+    obelix27:
+      ansible_host: "192.168.245.27"
+      sinfonia_tier2_url: "http://192.168.245.27:30051"
+      carbonedge_tier2_latitude: "42.3757"
+      carbonedge_tier2_longitude: "-72.5199"
+
+    obelix31:
+      ansible_host: "192.168.245.31"
+      sinfonia_tier2_url: "http://192.168.245.31:30051"
+      carbonedge_tier2_latitude: "42.3757"
+      carbonedge_tier2_longitude: "-72.5199"
