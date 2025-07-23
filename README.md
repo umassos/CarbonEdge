@@ -25,15 +25,29 @@ CarbonEdge has been tested with the following environment:
 - k3s 1.32.6
 - kubectl 1.32.6
 - Docker 27.1.0
+- Ansible 2.16.14
 
-### Setup
+In addition, CarbonEdge requires an API authentication key from Electricity Maps, which you can acquire for free [here](https://portal.electricitymaps.com/auth/signup?return=%2Fauth%2Flogin).
 
-Dependencies for the project are managed by the Poetry package manager, and can be found in pyproject.toml. To install, run:
+### Deploying CarbonEdge
+
+Sinfonia is designed to be deployed as a Kubernetes deployment. We provided an Ansible script to automate Sinfonia-Tier2 
+deployment across multiple target machines. An example Ansible inventory file is given at deploy-tier2/inv/inv.yaml. We also require an API authenticat
+
+### CarbonEdge configuration
+
+CarbonEdge is configured via environment variables. 
+
+### Local development
+
+Dependencies for the project are managed by the Poetry package manager, and can be found in pyproject.toml. To install, 
+run:
 ```
 poetry install
 ```
 
-Poetry will spawn a virtual environment, install the necessary packages, and install Sinfonia-Tier1 and Sinfonia-Tier2 as modules. To verify that installation was successful, you can now run Sinfonia-Tier1 as follows,
+Poetry will spawn a virtual environment, install the necessary packages, and install Sinfonia-Tier1 and Sinfonia-Tier2 
+as modules. To verify that installation was successful, you can now run Sinfonia-Tier1 as follows,
 ```
 poetry run sinfonia-tier1
 ```
@@ -41,9 +55,6 @@ and Sinfonia-Tier2 as follows,
 ```
 poetry run sinfonia-tier2
 ```
-
-Sinfonia also requires supporting services to function (e.g. Prometheus). To set up, 
-
 
 ## License
 
@@ -54,4 +65,3 @@ This project is licensed under the MIT License. See the LICENSE file for details
 For questions, issues, or contributions, please contact:
 - **Li (Lilly) Wu** — [liwu@umass.edu](mailto:liwu@umass.edu)
 - **Khai Nguyen** — [tuankhai2k@gmail.com](mailto:tuankhai2k@gmail.com)  
-

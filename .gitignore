@@ -30,3 +30,4 @@ poetry.lock
 # CarbonEgde
 
 carbonedge*.yaml
+deploy-tier2/inv/secrets.yaml
