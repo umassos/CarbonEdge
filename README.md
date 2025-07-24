@@ -13,9 +13,7 @@ The project is organized into the following modules:
 - **RECIPES** - Contains Sinfonia recipes to deploy user applications in Sinfonia.
 - **src** - Contains CarbonEdge/Sinfonia code and logic.
 
-## Deployment
-
-### Prerequisites
+## Prerequisites
 
 CarbonEdge has been tested with the following environment:
 - Ubuntu 22.04
@@ -28,6 +26,8 @@ CarbonEdge has been tested with the following environment:
 - Ansible 2.16.14
 
 In addition, CarbonEdge requires an API authentication key from Electricity Maps, which you can acquire for free [here](https://portal.electricitymaps.com/auth/signup?return=%2Fauth%2Flogin).
+
+## Deployment
 
 ### Deploying CarbonEdge
 
@@ -66,8 +66,6 @@ For Sinfonia-Tier2, the available environment variables are,
 - `CARBONEDGE_CARBON_INTENSITY_QUERY_MODE` ('REALTIME' | 'REPLAY'): Method to inquire carbon intensity at Sinfonia-Tier2 location. **Note: For now, only 'REALTIME' mode is supported.**
 - `CARBONEDGE_REALTIME_ELECTRICITY_MAPS_AUTH_TOKEN`: Electricity Maps API authentication token.'
 
-For local development, we provide a convenient `--carbonedge-config` option to parse environment variables from a `.env` file.
-
 All environment variables, unless specified as optional or default, must be configured in order for CarbonEdge to be enabled. On successful configuration, the server will log `CarbonEdge enabled`, otherwise the server will log `CarbonEdge disabled`.
 
 To configure CarbonEdge environment variables in Kubernetes deployment, we provided hooks in the Ansible deployment scripts that you can specify. For Sinfonia-Tier2 deployment,
@@ -78,23 +76,38 @@ To configure CarbonEdge environment variables in Kubernetes deployment, we provi
 - `carbonedge_tier2_latitude` / `carbonedge_tier2_longitude`
 
 
-### Local development
+## Development
 
-Dependencies for the project are managed by the Poetry package manager, and can be found in pyproject.toml. To install, 
+### Getting started
+
+Dependencies for the project are managed by the Poetry package manager, and can be found in pyproject.toml. We recommend that you start a virtual environment via `poetry env activate`. To install, 
 run:
 ```
 poetry install
 ```
 
 Poetry will spawn a virtual environment, install the necessary packages, and install Sinfonia-Tier1 and Sinfonia-Tier2 
-as modules. To verify that installation was successful, you can now run Sinfonia-Tier1 as follows,
+as modules. To verify that installation was successful, you can now run Sinfonia-Tier1 or Sinfonia-Tier2 as follows,
 ```
-poetry run sinfonia-tier1
+poetry run sinfonia-tier<1/2>
 ```
-and Sinfonia-Tier2 as follows,
+
+To enable CarbonEdge, environment variables must be defined as specified in the CarbonEdge configuration section. For local development, we provide a convenient `--carbonedge-config` option to parse environment variables from a `.env` file.
+
+### Running Sinfonia locally
+
+For Sinfonia-Tier1
+
+To view help panels, you can run,
 ```
-poetry run sinfonia-tier2
+poetry run sinfonia-tier<1/2> --help
 ```
+
+
+
+### Sinfonia matchers
+
+TBD
 
 ## License
 
