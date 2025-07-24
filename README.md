@@ -4,6 +4,10 @@
 
 ## Architecture
 
+Add diagram.
+
+How CarbonEdge reporting works, how Tier1 uses carbon data to route request.
+
 ## Organization
 
 The project is organized into the following modules:
@@ -32,7 +36,7 @@ In addition, CarbonEdge requires an API authentication key from Electricity Maps
 ### Deploying CarbonEdge
 
 Sinfonia is designed to be deployed as a Kubernetes deployment. We provided an Ansible script to automate Sinfonia-Tier2 
-deployment across multiple target machines. An example Ansible inventory file is given at `deploy-tier2/inv/inv.yaml`. To provide the Electricity maps authentication key, create an Ansible vault file,
+deployment across multiple target machines. The Ansible script will provision the necessary infrastructure and services to run Sinfonia, and will deploy Sinfonia as a Helm chart deployment. A template Ansible inventory file is given at `deploy-tier2/inv/inv.yaml`. To provide the Electricity maps authentication key, create an Ansible vault file,
 ```
 ansible-vault create deploy-tier2/inv/secrets.yaml
 ```
@@ -41,7 +45,7 @@ with the following field,
 carbonedge_tier2_electricity_maps_auth_token: <AUTH_TOKEN>
 ```
 
-To deploy, run the provided Ansible script as follows,
+To deploy, modify the Ansible deployment script with your system's configuration (username, IP), and run the provided Ansible script as follows,
 ```
 ansible-playbook deploy-tier2/deploy.yml -KJ 
 ```
@@ -56,7 +60,12 @@ This will deploy the necessary infrastructure and a CarbonEdge-enabled Sinfonia-
 kubectl get po -A
 ```
 
-### CarbonEdge configuration
+### Configuration
+
+Sinfonia-Tier1 provides the following configurable environment variables,
+- `SINFONIA_CLOUDLETS` [OPTIONAL]: 
+- `SINFONIA_MATCHERS`: 
+
 
 CarbonEdge is configured via environment variables. For Sinfonia-Tier1, the available environment variables are,
 - `CARBONEDGE_CARBON_LOG_FOLDER_PATH`: Folder path to log carbon logs.
@@ -64,16 +73,19 @@ CarbonEdge is configured via environment variables. For Sinfonia-Tier1, the avai
 For Sinfonia-Tier2, the available environment variables are,
 - `CARBONEDGE_LATITUDE` / `CARBONEDGE_LATITUDE` [OPTIONAL]: Coordinates for Sinfonia-Tier2 server location. If unspecified, Sinfonia will attempt to estimate coordinates based on IP address.
 - `CARBONEDGE_CARBON_INTENSITY_QUERY_MODE` ('REALTIME' | 'REPLAY'): Method to inquire carbon intensity at Sinfonia-Tier2 location. **Note: For now, only 'REALTIME' mode is supported.**
-- `CARBONEDGE_REALTIME_ELECTRICITY_MAPS_AUTH_TOKEN`: Electricity Maps API authentication token.'
+- `CARBONEDGE_REALTIME_ELECTRICITY_MAPS_AUTH_TOKEN`: Electricity Maps API authentication token.
 
-All environment variables, unless specified as optional or default, must be configured in order for CarbonEdge to be enabled. On successful configuration, the server will log `CarbonEdge enabled`, otherwise the server will log `CarbonEdge disabled`.
+All CarbonEdge environment variables, unless specified as optional or default, must be configured in order for CarbonEdge to be enabled. On successful configuration, the server will log `CarbonEdge enabled`, otherwise the server will log `CarbonEdge disabled`.
 
 To configure CarbonEdge environment variables in Kubernetes deployment, we provided hooks in the Ansible deployment scripts that you can specify. For Sinfonia-Tier2 deployment,
 - `sinfonia_recipes`: Path or public URL to Sinfonia recipe repository.
 - `sinfonia_tier1_url`: Public URL of Sinfonia-Tier1 instance.
-- `sinfonia_tier2_url`: Public URL of Sinfonia-Tier2 instance.
+- `sinfonia_tier2_url`: Public URL of Sinfonia-Tier2 instance. **Note: Sinfonia-Tier2 deployed via Helm is always at port 30051.**
 - `carbonedge_tier2_carbon_intensity_query_mode`
 - `carbonedge_tier2_latitude` / `carbonedge_tier2_longitude`
+
+### CarbonEdge reporting
+
 
 
 ## Development
@@ -94,9 +106,9 @@ poetry run sinfonia-tier<1/2>
 
 ### Running Sinfonia locally
 
-For Sinfonia-Tier1, the
-
 To enable CarbonEdge, environment variables must be defined as specified in the CarbonEdge configuration section. For local development, we provide a convenient `--carbonedge-config` option to parse environment variables from a `.env` file.
+
+For Sinfonia-Tier1, the
 
 To view help panels, you can run,
 ```
