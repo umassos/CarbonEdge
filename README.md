@@ -32,11 +32,51 @@ In addition, CarbonEdge requires an API authentication key from Electricity Maps
 ### Deploying CarbonEdge
 
 Sinfonia is designed to be deployed as a Kubernetes deployment. We provided an Ansible script to automate Sinfonia-Tier2 
-deployment across multiple target machines. An example Ansible inventory file is given at deploy-tier2/inv/inv.yaml. We also require an API authenticat
+deployment across multiple target machines. An example Ansible inventory file is given at `deploy-tier2/inv/inv.yaml`. To provide the Electricity maps authentication key, create an Ansible vault file,
+```
+ansible-vault create deploy-tier2/inv/secrets.yaml
+```
+with the following field,
+```
+carbonedge_tier2_electricity_maps_auth_token: <AUTH_TOKEN>
+```
+
+To deploy, run the provided Ansible script as follows,
+```
+ansible-playbook deploy-tier2/deploy.yml -KJ 
+```
+
+If you want to deploy to multiple target machines via Ansible inventory, modify the Ansible deployment script accordingly and run the command,
+```
+ansible-playbook deploy-tier2/deploy.yml -KJ -i <PATH_TO_INVENTORY_FILE>
+```
+
+This will deploy the necessary infrastructure and a CarbonEdge-enabled Sinfonia-Tier2 instance on Kubernetes. To verify that all deployments are up and running, you can run,
+```
+kubectl get po -A
+```
 
 ### CarbonEdge configuration
 
-CarbonEdge is configured via environment variables. 
+CarbonEdge is configured via environment variables. For Sinfonia-Tier1, the available environment variables are,
+- `CARBONEDGE_CARBON_LOG_FOLDER_PATH`: Folder path to log carbon logs.
+
+For Sinfonia-Tier2, the available environment variables are,
+- `CARBONEDGE_LATITUDE` / `CARBONEDGE_LATITUDE` [OPTIONAL]: Coordinates for Sinfonia-Tier2 server location. If unspecified, Sinfonia will attempt to estimate coordinates based on IP address.
+- `CARBONEDGE_CARBON_INTENSITY_QUERY_MODE` ('REALTIME' | 'REPLAY'): Method to inquire carbon intensity at Sinfonia-Tier2 location. **Note: For now, only 'REALTIME' mode is supported.**
+- `CARBONEDGE_REALTIME_ELECTRICITY_MAPS_AUTH_TOKEN`: Electricity Maps API authentication token.'
+
+For local development, we provide a convenient `--carbonedge-config` option to parse environment variables from a `.env` file.
+
+All environment variables, unless specified as optional or default, must be configured in order for CarbonEdge to be enabled. On successful configuration, the server will log `CarbonEdge enabled`, otherwise the server will log `CarbonEdge disabled`.
+
+To configure CarbonEdge environment variables in Kubernetes deployment, we provided hooks in the Ansible deployment scripts that you can specify. For Sinfonia-Tier2 deployment,
+- `sinfonia_recipes`: Path or public URL to Sinfonia recipe repository.
+- `sinfonia_tier1_url`: Public URL of Sinfonia-Tier1 instance.
+- `sinfonia_tier2_url`: Public URL of Sinfonia-Tier2 instance.
+- `carbonedge_tier2_carbon_intensity_query_mode`
+- `carbonedge_tier2_latitude` / `carbonedge_tier2_longitude`
+
 
 ### Local development
 
