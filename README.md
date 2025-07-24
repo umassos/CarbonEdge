@@ -31,6 +31,8 @@ CarbonEdge has been tested with the following environment:
 
 In addition, CarbonEdge requires an API authentication key from Electricity Maps, which you can acquire for free [here](https://portal.electricitymaps.com/auth/signup?return=%2Fauth%2Flogin).
 
+**To avoid permission errors, we strongly recommend installing dependencies globally across all users.**
+
 ## Deployment
 
 ### Deploying CarbonEdge
@@ -64,8 +66,10 @@ kubectl get po -A
 
 Sinfonia-Tier1 provides the following configurable environment variables,
 - `SINFONIA_CLOUDLETS` [OPTIONAL]: 
-- `SINFONIA_MATCHERS`: 
+- `SINFONIA_MATCHERS` [DEFAULT ["carbon-edge"]]: 
+- `SINFONIA_RECIPES` [DEFAULT 'RECIPIES']:
 
+Sinfonia-Tier2
 
 CarbonEdge is configured via environment variables. For Sinfonia-Tier1, the available environment variables are,
 - `CARBONEDGE_CARBON_LOG_FOLDER_PATH`: Folder path to log carbon logs.

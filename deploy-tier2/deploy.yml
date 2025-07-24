@@ -21,19 +21,14 @@
       path: "files"
       state: directory
 
-  - name: set working directory
-    set_fact:
-      poetry_dir: "{{ playbook_dir }}/.."
+  - name: update local copy of deployment files
+    ansible.builtin.command:
+      cmd: poetry run poe update-deployment-files
+      creates: "files/kilo-wg-exporter.yaml"
 
-  # - name: update local copy of deployment files
-  #   ansible.builtin.command:
-  #     cmd: poetry run poe update-deployment-files
-  #     chdir: "{{ poetry_dir }}"
-  #     creates: "files/kilo-wg-exporter.yaml"
-
-- hosts: localhost  # Change to Ansible host group for deployment via Ansible inventory file
+- hosts: tier2hosts  # Change to Ansible host group for deployment via Ansible inventory file
   remote_user: khainguyen  # Change to your user
-  become_user: root
+  become_user: root  # Change to your user
   become: true
 
   # Uncomment if using Ansible vault to manage secrets
@@ -50,7 +45,7 @@
     # carbonedge_tier2_electricity_maps_auth_token: ""
 
     # Common variables across all deployments
-    sinfonia_tier1_url: "http://192.168.245.26:5000"
+    sinfonia_tier1_url: "http://192.168.245.190:5000"
     carbonedge_tier2_carbon_intensity_query_mode: "REALTIME"
     enable_ufw: false
     override_resolv_conf: true
@@ -63,7 +58,7 @@
 
     # Localhost deployment
     # Uncomment for localhost deployment
-    sinfonia_tier2_url: "http://192.168.245.26:30051"  # Sinfonia-Tier2 is always configured to run on port 30051 via Helm
+    sinfonia_tier2_url: "http://192.168.245.192:30051"  # Sinfonia-Tier2 is always configured to run on port 30051 via Helm
     carbonedge_tier2_latitude: "42.3757"
     carbonedge_tier2_longitude: "-72.5199"
 
