@@ -59,7 +59,12 @@ def init_carbonedge(
 
 class Tier1DefaultConfig:
     CLOUDLETS: str | Path | None = None
-    MATCHERS: list[str] = ["network", "location", "random", "carbon-aware"]
+    MATCHERS: list[str] = [
+        # "network", 
+        # "location", 
+        # "random", 
+        "carbon-aware"
+    ]
     RECIPES: str | Path | URL = "RECIPES"
 
     # These are initialized by the wsgi app factory from the config

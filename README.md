@@ -92,18 +92,16 @@ as modules. To verify that installation was successful, you can now run Sinfonia
 poetry run sinfonia-tier<1/2>
 ```
 
-To enable CarbonEdge, environment variables must be defined as specified in the CarbonEdge configuration section. For local development, we provide a convenient `--carbonedge-config` option to parse environment variables from a `.env` file.
-
 ### Running Sinfonia locally
 
-For Sinfonia-Tier1
+For Sinfonia-Tier1, the
+
+To enable CarbonEdge, environment variables must be defined as specified in the CarbonEdge configuration section. For local development, we provide a convenient `--carbonedge-config` option to parse environment variables from a `.env` file.
 
 To view help panels, you can run,
 ```
 poetry run sinfonia-tier<1/2> --help
 ```
-
-
 
 ### Sinfonia matchers
 
