@@ -3,10 +3,10 @@ from __future__ import annotations
 import logging
 from enum import Enum
 from pathlib import Path
-from typing import Optional, ClassVar, Dict, Any
+from typing import Optional, ClassVar, Dict, Any, List
 from urllib.parse import urlparse
 
-from pydantic import field_validator, model_validator, PrivateAttr, FilePath
+from pydantic import field_validator, model_validator, PrivateAttr
 from pydantic_settings import BaseSettings
 from yarl import URL
 
@@ -35,7 +35,7 @@ class Tier1CarbonEdgeConfig(BaseSettings):
         try:
             path = Path(v)
         except Exception:
-            logging.error(f"[{cls._LOGGING_PFX}] Invalid carbon_log_folder_path path value")
+            logging.warning(f"[{cls._LOGGING_PFX}] Invalid carbon_log_folder_path path value")
             return None
 
         try:
@@ -50,17 +50,16 @@ class Tier1CarbonEdgeConfig(BaseSettings):
 
         return path
     
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def _check_is_carbonedge_enabled(self) -> Tier1CarbonEdgeConfig:
-        if self.carbon_log_folder_path:
-            self._is_carbonedge_enabled = True
+        self._is_carbonedge_enabled = True
         return self
 
     @classmethod
     def from_env_file(cls, env_path: Path) -> Tier1CarbonEdgeConfig:
         cls.model_config = {
             **cls.model_config,
-            'env_file': str(env_path)
+            "env_file": str(env_path)
         }
         return cls()
     
@@ -90,28 +89,28 @@ class Tier2CarbonEdgeConfig(BaseSettings):
     realtime_electricity_maps_auth_token: Optional[str] = None
     replay_carbon_trace_uri: Optional[str] = None
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def _validate_and_build_coordinate(cls, v: Dict) -> dict:
-        lat = v.get('carbonedge_latitude')
-        lon = v.get('carbonedge_longitude')
+        lat = v.get("carbonedge_latitude")
+        lon = v.get("carbonedge_longitude")
 
         if lat is not None and lon is not None:
             try:
-                v['coordinate'] = GeoLocation(latitude=lat, longitude=lon)
+                v["coordinate"] = GeoLocation(latitude=lat, longitude=lon)
             except Exception as e:
                 logger.warning(f"[{cls._LOGGING_PFX}] Invalid lat/lon for GeoLocation: {e}")
-                v['coordinate'] = None
+                v["coordinate"] = None
 
         if lat:
-            del v['carbonedge_latitude']
+            del v["carbonedge_latitude"]
 
         if lon:
-            del v['carbonedge_longitude']
+            del v["carbonedge_longitude"]
 
         return v
 
-    @field_validator('carbon_intensity_query_mode', mode='before')
+    @field_validator("carbon_intensity_query_mode", mode="before")
     @classmethod
     def _validate_carbon_intensity_query_mode(cls, v: Dict) -> CarbonIntensityQueryMode:
         try:
@@ -124,7 +123,7 @@ class Tier2CarbonEdgeConfig(BaseSettings):
         
         return query_mode
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def _validate_fetcher_configs(self) -> Tier2CarbonEdgeConfig:
         if self.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:
             if not self.realtime_electricity_maps_auth_token:
@@ -157,7 +156,7 @@ class Tier2CarbonEdgeConfig(BaseSettings):
 
         return self
     
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def _check_is_carbonedge_enabled(self) -> Tier1CarbonEdgeConfig:
         if self.carbon_intensity_query_mode is not CarbonIntensityQueryMode.OFF:
             self._is_carbonedge_enabled = True

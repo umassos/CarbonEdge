@@ -31,8 +31,6 @@ CarbonEdge has been tested with the following environment:
 
 In addition, CarbonEdge requires an API authentication key from Electricity Maps, which you can acquire for free [here](https://portal.electricitymaps.com/auth/signup?return=%2Fauth%2Flogin).
 
-**To avoid permission errors, we strongly recommend installing dependencies globally across all users.**
-
 ## Deployment
 
 ### Deploying CarbonEdge

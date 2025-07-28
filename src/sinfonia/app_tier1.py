@@ -49,11 +49,11 @@ def init_carbonedge(
         flask_cfg: flask.Config,
         ce_cfg: Tier1CarbonEdgeConfig
 ):
-    flask_cfg['CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
-        ce_cfg.carbon_log_folder_path
-    )
-
-    flask_cfg['CARBON_HISTORY_CSV_LOGGER'].write_headers()
+    if ce_cfg.carbon_log_folder_path:
+        flask_cfg['CARBON_HISTORY_CSV_LOGGER'] = CarbonHistoryCsvLogger(
+            ce_cfg.carbon_log_folder_path
+        )
+        flask_cfg['CARBON_HISTORY_CSV_LOGGER'].write_headers()
 
 
 
@@ -128,21 +128,11 @@ def wsgi_app_factory(**args) -> FlaskApp:
     cmdargs = {k.upper(): v for k, v in args.items() if v}
     flask_app.config.from_mapping(cmdargs)
 
-    # Load CarbonEdge config from environment variables
-    if 'CARBONEDGE_CONFIG' in flask_app.config:
-        ce_cfg_path = flask_app.config['CARBONEDGE_CONFIG']
-        ce_cfg = Tier1CarbonEdgeConfig.from_env_file(ce_cfg_path)
-    else:
-        ce_cfg = Tier1CarbonEdgeConfig()
-
-    if ce_cfg.is_carbonedge_enabled():
-        flask_app.config['CARBONEDGE_ENABLED'] = True
-        init_carbonedge(flask_app.config, ce_cfg)
-        logging.info('CarbonEdge enabled')
-        logging.info(ce_cfg.model_dump())
-    else:
-        flask_app.config['CARBONEDGE_ENABLED'] = False
-        logging.info('CarbonEdge disabled')
+    # Parse matchers
+    matchers = flask_app.config["MATCHERS"]
+    if isinstance(matchers, str):
+        matchers = [m.strip() for m in matchers.split(',')]
+    flask_app.config["MATCHERS"] = matchers
 
     flask_app.config["executor"] = Executor(flask_app)
     flask_app.config["geolite2_reader"] = geolite2.reader()
@@ -157,6 +147,22 @@ def wsgi_app_factory(**args) -> FlaskApp:
     flask_app.config["match_functions"] = load_match_functions(
         flask_app.config["MATCHERS"]
     )
+
+    # Load CarbonEdge config from environment variables
+    if "CARBONEDGE_CONFIG" in flask_app.config:
+        ce_cfg_path = flask_app.config["CARBONEDGE_CONFIG"]
+        ce_cfg = Tier1CarbonEdgeConfig.from_env_file(ce_cfg_path)
+    else:
+        ce_cfg = Tier1CarbonEdgeConfig()
+
+    if ce_cfg.is_carbonedge_enabled():
+        flask_app.config["CARBONEDGE_ENABLED"] = True
+        init_carbonedge(flask_app.config, ce_cfg)
+        logging.info("CarbonEdge enabled")
+        logging.info(ce_cfg.model_dump())
+    else:
+        flask_app.config["CARBONEDGE_ENABLED"] = False
+        logging.info("CarbonEdge disabled")
 
     # start background job to expire Tier2 cloudlets that are no longer reporting
     scheduler.init_app(flask_app)
