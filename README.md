@@ -138,7 +138,7 @@ Note that via our provided Helm chart, CarbonEdge-Tier1 and CarbonEdge-Tier2 wil
 
 ### Enabling CarbonEdge
 
-TBD
+CarbonEdge was designed to be a feature of the Sinfonia platform. CarbonEdge can be enabled by setting the necessary required fields in Tier-1 and Tier-2, where services will log *Carbon enabled* or *Carbon disabled* depending whether CarbonEdge configurations were correctly specified. You can also check that CarbonEdge is enable by verifying that CarbonEdge-Tier2 is reporting carbon and energy data fields to CarbonEdge-Tier1.
 
 ## Development
 
