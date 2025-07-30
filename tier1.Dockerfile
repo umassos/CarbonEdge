@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Carnegie Mellon University
 # SPDX-License-Identifier: MIT
 
-FROM python:3.10-slim as base
+FROM python:3.10-slim AS base
 
 LABEL org.opencontainers.image.description='Discovery and deployment for edge-native applications' \
       org.opencontainers.image.source='https://github.com/cmusatyalab/sinfonia' \
@@ -15,10 +15,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-FROM base as builder
+FROM base AS builder
 
-ENV KUBECTL_VERSION=v1.23.2 \
-    HELM_VERSION=v3.8.0
+ENV KUBECTL_VERSION=v1.33.1 \
+    HELM_VERSION=v3.18.3
 
 RUN apt-get update && apt-get install --no-install-recommends -y curl git \
  && apt-get clean -y && rm -rf /var/lib/apt/lists/* \
@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y curl git \
 ENV PIP_DEFAULT_TIMEOUT=100 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
-    POETRY_VERSION=1.2.2 \
+    POETRY_VERSION=2.1.3 \
     POETRY_NO_INTERACTION=1
 
 RUN pip install "poetry==$POETRY_VERSION" \
@@ -46,7 +46,7 @@ COPY tests ./tests
 RUN poetry build && /venv/bin/pip install dist/*.whl
 
 
-FROM base as final
+FROM base AS final
 
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /venv /venv
@@ -57,4 +57,4 @@ ENV SINFONIA_RECIPES=/RECIPES
 
 EXPOSE 5000
 
-ENTRYPOINT ["/venv/bin/sinfonia-tier2"]
+ENTRYPOINT ["/venv/bin/sinfonia-tier1"]

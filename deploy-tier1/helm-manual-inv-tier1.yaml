@@ -1,0 +1,7 @@
+image:
+  tag: dev3
+
+sinfoniaRecipes: "RECIPES"
+sinfoniaCloudlets: ""
+sinfoniaTier1Matchers: "carbon-aware"
+carbonedgeTier1CarbonLogFolderPath: "~/logs"

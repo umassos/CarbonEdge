@@ -7,8 +7,8 @@ import pytest
 from flask import Flask
 from geolite2 import geolite2
 
-from sinfonia.deployment_repository import DeploymentRepository
-from sinfonia.matchers import match_by_location, match_by_network, match_random
+from src.sinfonia.deployment_repository import DeploymentRepository
+from src.sinfonia.matchers import match_by_location, match_by_network, match_random
 
 GOOD_UUID = "00000000-0000-0000-0000-000000000000"
 GOOD_CONTENT = """\

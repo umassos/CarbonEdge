@@ -10,10 +10,10 @@
 # want to register with a sinfonia-tier1 instance.
 #  i.e. SINFONIA_TIER1_URL=https://cloudlet.mydomain.org
 ---
-- hosts: localhost
-  become: false
+- hosts: localhost  # This is always localhost
+  become: true
   gather_facts: false
-  no_log: true
+  no_log: false
 
   tasks:
   - name: make sure local directory for deployment files exists
@@ -26,18 +26,46 @@
       cmd: poetry run poe update-deployment-files
       creates: "files/kilo-wg-exporter.yaml"
 
-- hosts: all
-  remote_user: ubuntu
+- hosts: localhost  # Change to Ansible host group ('tier2hosts') for deployment via Ansible inventory file
+  remote_user: khainguyen  # Change to your user
   become_user: root
   become: true
 
+  # Uncomment if using Ansible vault to manage secrets
+  vars_files:
+    - inv/secrets.yaml
+
   vars:
-    sinfonia_tier1_url: "{{ lookup('env', 'SINFONIA_TIER1_URL') }}"
-    sinfonia_tier2_url: "http://{{ inventory_hostname }}"
+    # If hosting recipes in third-party repo, add link here
     #sinfonia_recipes: "https://storage.cmusatyalab.org/sinfonia-recipes/"
     sinfonia_recipes: ""
+
+    # Strongly recommend managing auth token via Ansible vault
+    # However, if you want, you can specify the auth token here
+    # carbonedge_tier2_electricity_maps_auth_token: ""
+
+    # CarbonEdge-Tier1 deployment variables
+    sinfonia_tier1_matchers: "carbon-aware"
+    sinfonia_tier1_cloudlets: ""
+    carbonedge_tier1_carbon_log_folder_path: "~/logs"
+
+    # CarbonEdge-Tier2 common variables across all deployments
+    sinfonia_tier1_url: "http://192.168.245.190:30051"  # CarbonEdge-Tier1 is always configured to run on port 30050 via Helm
+    carbonedge_tier2_carbon_intensity_query_mode: "REALTIME"
     enable_ufw: false
     override_resolv_conf: true
+
+    # CarbonEdge-Tier2 Host-specific variables
+    # Uncomment for deployment via Ansible inventory file
+    # sinfonia_tier2_url: "{{ hostvars[inventory_hostname].sinfonia_tier2_url }}"
+    # carbonedge_tier2_latitude: "{{ hostvars[inventory_hostname].carbonedge_tier2_latitude }}"
+    # carbonedge_tier2_longitude: "{{ hostvars[inventory_hostname].carbonedge_tier2_longitude }}"
+
+    # CarbonEdge-Tier2 localhost deployment
+    # Uncomment for localhost deployment
+    sinfonia_tier2_url: "http://192.168.245.190:30051"  # CarbonEdge-Tier2 is always configured to run on port 30051 via Helm
+    carbonedge_tier2_latitude: "42.3757"
+    carbonedge_tier2_longitude: "-72.5199"
 
   #environment:
   #  K8S_AUTH_KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -52,7 +80,8 @@
 
   #- name: configure storage...
 
-  - name: deploy sinfonia-tier2
+  # Uncomment if deploying CarbonEdge-Tier1 and Tier2 on same single target
+  - name: deploy carbonedge-tier1
     kubernetes.core.k8s:
       kubeconfig: /etc/rancher/k3s/k3s.yaml
       state: present
@@ -60,15 +89,47 @@
         apiVersion: helm.cattle.io/v1
         kind: HelmChart
         metadata:
-          name: sinfonia-tier2
+          name: carbonedge-tier1
           namespace: kube-system
         spec:
-          chart: sinfonia
-          repo: https://cmusatyalab.github.io/sinfonia
+          chart: carbonedge-tier1
+          repo: https://k2nt.github.io/helm/carbonedge
+          targetNamespace: default
+          valuesContent: |-
+            sinfoniaRecipes: "{{ sinfonia_recipes }}"
+            sinfoniaTier1Matchers: "{{ sinfonia_tier1_matchers }}"
+            sinfoniaTier1Cloudlets: "{{ sinfonia_tier1_cloudlets }}"
+            carbonedgeTier1CarbonLogFolderPath: "{{ carbonedge_tier1_carbon_log_folder_path }}"
+            ingress:
+              className: traefik
+            image:
+              repository: k2nt/carbonedge-tier1
+              tag: dev3
+
+  - name: deploy carbonedge-tier2
+    kubernetes.core.k8s:
+      kubeconfig: /etc/rancher/k3s/k3s.yaml
+      state: present
+      resource_definition:
+        apiVersion: helm.cattle.io/v1
+        kind: HelmChart
+        metadata:
+          name: carbonedge-tier2
+          namespace: kube-system
+        spec:
+          chart: carbonedge-tier2
+          repo: https://k2nt.github.io/helm/carbonedge
           targetNamespace: default
           valuesContent: |-
             sinfoniaTier1Url: "{{ sinfonia_tier1_url }}"
             sinfoniaTier2Url: "{{ sinfonia_tier2_url }}"
             sinfoniaRecipes: "{{ sinfonia_recipes }}"
+            carbonedgeTier2CarbonIntensityQueryMode: "{{ carbonedge_tier2_carbon_intensity_query_mode }}"
+            carbonedgeTier2ElectricityMapsAuthToken: "{{ carbonedge_tier2_electricity_maps_auth_token }}"
+            carbonedgeTier2Latitude: "{{ carbonedge_tier2_latitude }}"
+            carbonedgeTier2Longitude: "{{ carbonedge_tier2_longitude }}"
             ingress:
               className: traefik
+            image:
+              repository: k2nt/carbonedge-tier2
+              tag: dev3

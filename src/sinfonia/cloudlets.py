@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import socket
+from enum import Enum
 from concurrent.futures import Future
 from ipaddress import IPv4Network, IPv6Network, ip_interface
 from typing import Any, List, Union
@@ -327,7 +328,7 @@ class Cloudlet:
             resources=self.resources,
         )
         if self.last_update is not None:
-            summary["last_update"] = str(self.last_update)
+            summary["last_update"] = self.last_update.to_iso8601_string()
         return summary
 
 

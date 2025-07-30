@@ -10,7 +10,24 @@ sinfonia-*.tgz
 __pycache__/
 *~
 *.swp
+*.env
+
+logs/
+deploy-tier2/k3s-installer.sh
+deploy-tier2/kilo-crds.yaml
+deploy-tier2/kilo-k3s.yaml
+deploy-tier2/kilo-kube-router.yaml
+deploy-tier2/kilo-podmonitor.yaml
+deploy-tier2/kilo-wg-exporter.yaml
+deploy-tier2/kubevirt-cr.yaml
+deploy-tier2/kubevirt-operator.yaml
+
 
 # Package managers
 
 poetry.lock
+
+# CarbonEgde
+
+carbonedge*.yaml
+deploy-tier2/inv/secrets.yaml

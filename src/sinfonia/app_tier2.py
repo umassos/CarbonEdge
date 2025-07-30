@@ -8,13 +8,15 @@
 
 from __future__ import annotations
 
+import logging
 import socket
 from pathlib import Path
 from uuid import uuid4
 
-import connexion
+import flask
 import typer
 from attrs import define
+from connexion import FlaskApp
 from connexion.resolver import MethodViewResolver
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.serving import get_interface_ip
@@ -30,10 +32,16 @@ from .app_common import (
     recipes_option,
     version_option,
 )
+from .carbonedge_config import Tier2CarbonEdgeConfig, CarbonIntensityQueryMode
+from .carbonedge_fetcher import RealTimeFetcher, ReplayFetcher
+from .carbonedge_energy_monitor import RAPLEnergyDelta
 from .cluster import Cluster
 from .deployment_repository import DeploymentRepository
 from .jobs import scheduler, start_expire_deployments_job, start_reporting_job
-from .openapi import load_spec
+
+
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class Tier2DefaultConfig:
@@ -43,6 +51,7 @@ class Tier2DefaultConfig:
     PROMETHEUS: str = "http://kube-prometheus-stack-prometheus.monitoring:9090"
     TIER1_URLS: list[str] = []
     TIER2_URL: str | None = None
+    REPORT_TO_TIER1_INTERVAL_SECONDS: int = 15
 
     # These are initialized by the wsgi app factory from the config
     # UUID: UUID
@@ -50,17 +59,43 @@ class Tier2DefaultConfig:
     # K8S_CLUSTER : Cluster | None = None   # KUBECONFIG KUBECONTEXT PROMETHEUS
 
 
-def tier2_app_factory(**args) -> connexion.FlaskApp:
+def init_carbonedge(
+        flask_cfg: flask.Config,
+        ce_cfg: Tier2CarbonEdgeConfig
+):
+    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REALTIME:
+        flask_cfg['CARBON_REALTIME_FETCHER'] = RealTimeFetcher(
+            electricity_maps_auth_token=ce_cfg.realtime_electricity_maps_auth_token,
+            coordinate=ce_cfg.coordinate,
+        )
+
+    if ce_cfg.carbon_intensity_query_mode is CarbonIntensityQueryMode.REPLAY:
+        flask_cfg['CARBON_REPLAY_FETCHER'] = ReplayFetcher(
+            carbon_trace_uri=ce_cfg.replay_carbon_trace_uri
+        )
+
+    flask_cfg['RAPL_ENERGY_DELTA'] = RAPLEnergyDelta()
+
+
+def tier2_app_factory(**args) -> FlaskApp:
     """Sinfonia Tier 2 API server"""
-    app = connexion.FlaskApp(__name__, specification_dir="openapi/")
+    app = FlaskApp(__name__, specification_dir="openapi/")
 
     flask_app = app.app
+
+    # Load default config
     flask_app.config.from_object(Tier2DefaultConfig)
+
+    # Load config from environment file
+    # 'SINFONIA_SETTINGS' is path to .env file
     flask_app.config.from_envvar("SINFONIA_SETTINGS", silent=True)
-    flask_app.config.from_prefixed_env(prefix="SINFONIA")
+
+    # Load config from prefixed environment variables
+    flask_app.config.from_prefixed_env(prefix='SINFONIA')
     if flask_app.config.get("TIER1_URL"):
         flask_app.config["TIER1_URLS"] = [flask_app.config["TIER1_URL"]]
 
+    # Load config from command line argument
     cmdargs = {k.upper(): v for k, v in args.items() if v}
     flask_app.config.from_mapping(cmdargs)
 
@@ -87,16 +122,34 @@ def tier2_app_factory(**args) -> connexion.FlaskApp:
     # handle running behind reverse proxy (should this be made configurable?)
     flask_app.wsgi_app = ProxyFix(flask_app.wsgi_app)
 
+   # Load CarbonEdge config from environment variables
+    if 'CARBONEDGE_CONFIG' in flask_app.config:
+        ce_cfg_path = flask_app.config['CARBONEDGE_CONFIG']
+        ce_cfg = Tier2CarbonEdgeConfig.from_env_file(ce_cfg_path)
+    else:
+        ce_cfg = Tier2CarbonEdgeConfig()
+
+    if ce_cfg.is_carbonedge_enabled():
+        flask_app.config['CARBONEDGE_ENABLED'] = True
+        init_carbonedge(flask_app.config, ce_cfg)
+        logging.info('CarbonEdge enabled')
+        logging.info(ce_cfg.model_dump())
+    else:
+        flask_app.config['CARBONEDGE_ENABLED'] = False
+        logging.info('CarbonEdge disabled')
+
     # add Tier1 APIs
     app.add_api(
-        load_spec(app.specification_dir / "sinfonia_tier2.yaml"),
-        resolver=MethodViewResolver("sinfonia.api_tier2"),
+        "sinfonia_tier2.yaml",
+        resolver=MethodViewResolver("src.sinfonia.api_tier2"),
         validate_responses=True,
     )
 
     @app.route("/")
     def index():
         return ""
+    
+    logging.info
 
     return app
 
@@ -187,24 +240,41 @@ def tier2_server(
         False,
         help="Announce cloudlet on local network(s) with zeroconf mdns",
     ),
+    carbonedge_config: OptionalPath = typer.Option(
+        None,
+        help="Path to CarbonEdge config file",
+        show_default=False,
+        exists=True,
+        dir_okay=False,
+        resolve_path=True,
+        rich_help_panel="Config",
+    ),
 ):
-    """Run Sinfonia TIer2 with Flask's builtin server (for development)"""
-    app = tier2_app_factory(
-        recipes=recipes,
-        kubeconfig=kubeconfig,
-        kubecontext=kubecontext,
-        prometheus=prometheus,
-        tier1_urls=tier1_urls,
-        tier2_url=tier2_url,
-    )
+    """Run Sinfonia Tier-2 with Flask's builtin server (for development)"""
+    try:
+        app = tier2_app_factory(
+            recipes=recipes,
+            kubeconfig=kubeconfig,
+            kubecontext=kubecontext,
+            prometheus=prometheus,
+            tier1_urls=tier1_urls,
+            tier2_url=tier2_url,
+            carbonedge_config=carbonedge_config,
+        )
+    except Exception as e:
+        logging.error(e)
+        return
 
     # run application, optionally announcing availability with MDNS
     zeroconf_mdns = ZeroconfMDNS()
     if zeroconf:
         zeroconf_mdns.announce(port)
+
     try:
-        app.run(port=port)
+        app.run(host='0.0.0.0', port=port)
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        logging.error(e)
     finally:
         zeroconf_mdns.withdraw()

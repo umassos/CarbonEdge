@@ -8,6 +8,7 @@
 # SPDX-License-Identifier: MIT
 #
 
+import time
 import logging
 from itertools import chain, filterfalse, islice, zip_longest
 
@@ -16,10 +17,12 @@ from connexion.exceptions import ProblemException
 from flask import current_app, request
 from flask.views import MethodView
 
+from .carbonedge_carbon_history import CarbonHistoryCsvLogger
 from .client_info import ClientInfo
 from .cloudlets import Cloudlet
 from .deployment_recipe import DeploymentRecipe
 from .matchers import tier1_best_match
+
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,17 +33,31 @@ MAX_RESULTS = 3
 
 
 class CloudletsView(MethodView):
-    def post(self):
-        body = request.json
+    def post(self, body):
         if not isinstance(body, dict) or "uuid" not in body:
             return "Bad Request, missing UUID", 400
 
         cloudlet = Cloudlet.new_from_api(body)
         cloudlets = current_app.config["cloudlets"]
         cloudlets[cloudlet.uuid] = cloudlet
+
+        if 'CARBON_HISTORY_CSV_LOGGER' in current_app.config:
+            resources = cloudlet.resources
+
+            logger: CarbonHistoryCsvLogger = current_app.config['CARBON_HISTORY_CSV_LOGGER']
+            logger.write_row(
+                timestamp=int(time.time()),
+                tier2_endpoint=cloudlet.endpoint,
+                carbon_intensity_gco2_kwh=resources.get('carbon_intensity_gco2_kwh'),
+                energy_use_joules=-1,
+                carbon_emission_gco2=-1,
+                cpu_ratio=resources.get('cpu_ratio'),
+                mem_ratio=resources.get('mem_ratio'),
+            )
+
         return NoContent, 204
 
-    def search(self):
+    def get(self):
         cloudlets = current_app.config["cloudlets"]
         return [cloudlet.summary() for cloudlet in cloudlets.values()]
 

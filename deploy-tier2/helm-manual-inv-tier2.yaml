@@ -1,0 +1,10 @@
+image:
+  tag: dev3
+
+sinfoniaTier1Url: http://192.168.245.26:5000
+sinfoniaTier2Url: http://192.168.245.26:30051
+
+carbonedgeTier2Latitude: "42.3757"
+carbonedgeTier2Longitude: "-72.5199"
+carbonedgeTier2CarbonIntensityQueryMode: REALTIME
+carbonedgeTier2ElectricityMapsAuthToken: ""

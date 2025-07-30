@@ -138,3 +138,26 @@ def match_random(
         logger.info("random (%s)", cloudlet.name)
         cloudlets.remove(cloudlet)
         yield cloudlet
+
+
+def match_carbon_aware(
+    _client_info: ClientInfo,
+    _deployment_recipe: DeploymentRecipe,
+    cloudlets: list[Cloudlet],
+) -> Iterator[Cloudlet]:
+    """Yields cloudlet recommendations based on lowest carbon intensity level"""
+    CI_KEY = 'carbon_intensity_gco2_kwh'
+
+    # Filter cloudlets with carbon intensity data
+    carbon_cloudlets = filter(
+        lambda c: CI_KEY in c.resources,
+        cloudlets
+    )
+
+    # Sort by lowest carbon intensity
+    carbon_cloudlets = sorted(carbon_cloudlets, lambda c: c.resources[CI_KEY])
+
+    # TODO: We are yielding every available cloudlets, should we be more precise here?
+    for cloudlet in cloudlets:
+        cloudlets.remove(cloudlet)
+        yield cloudlet    
