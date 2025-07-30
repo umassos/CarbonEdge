@@ -236,6 +236,18 @@ To define a custom matcher, implement the matcher function in the file *src/sinf
 - ```_deployment_recipe: DeploymentRecipe``` - Information on application recipe to be deployed.
 - ```cloudlets: List[Cloudlet]``` - List of Tier-2 cloudlets known to Tier-1.
 
+The matcher will need to be registered as a Poetry module. In the *pyproject.toml* file, under the `[tool.poetry.plugins."src.sinfonia.tier1_matchers"]` section, define the name and path tuple to the matcher. An example would be,
+```
+# pyproject.toml
+
+...
+
+[tool.poetry.plugins."src.sinfonia.tier1_matchers"]
+carbon-aware = "src.sinfonia.matchers:match_carbon_aware"
+
+...
+```
+
 To specify which matcher to use, define the environment variable `SINFONIA_MATCHERS` or the CLI option `--matcher` on Tier-1. The matchers are listed as comma-separated values and will be applied in the order they are given. An example would be *"location,network,carbon-aware"*.
 
 ## License
