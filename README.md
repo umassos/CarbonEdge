@@ -176,17 +176,50 @@ CarbonEdge environment variables:
 
 Note that `SINFONIA_TIER1_URLS` and `SINFONIA_TIER2_URL` **_must_** be defined to enable reporting job from Tier-2 to Tier-1. Also, Tier-2 requires a Prometheus to query system telemetry. If Prometheus is deployed on Kubernetes, you can manually acquire the Prometheus service IP address by running ```kubectl get po -n monitoring -o wide``` and get the IP address of pod ```prometheus-kube-prometheus-stack-prometheus-0```. Note that Prometheus runs on default port 9090.
 
-### CarbonEdge-Tier3
+### Sinfonia-Tier3
 
-TBD
+While not a part of CarbonEdge and not included in this repository, the users at edge sites can implement a Sinfonia-Tier3 service to deploy their custom applications on CarbonEdge. An example Tier-3 implementation is given [here](https://github.com/cmusatyalab/sinfonia-tier3).
 
 ### Containerization
 
-TBD
+To be deployable on Kubernetes, the codebase must first be containerized and pushed onto a public repository. We provide *tier1.Dockerfile* and *tier2.Dockerfile* for Tier-1 and Tier-2 respectively. To containerize the codebase, run,
+```
+docker build -t <username>/carbonedge-tier<1/2>:<tag> -f tier<1/2>.Dockerfile .
+```
+
+The image must be accessible via Docker Hub,
+```
+docker push <image_name>
+```
 
 ### Recipes
 
-TBD
+A Sinfonia recipe represents a deployable end-user application on Sinfonia. Essentially, it is a wrapper around a Helm chart. 
+
+To create a new recipe, the first step is to containerize and create a Helm chart for your application. Then, define a deployment recipe file in either a local folder or a publically-accessible recipe repository.
+
+The deployment recipe file is a YAML document which is expected to be named as a unique UUID with a *.yaml* extension and is stored in the `--recipes=URL` (`SINFONIA_RECIPES` environment variable) repository of a Sinfonia Tier2 instance. There is an optional description field, which is used for documenting the purpose and customizations of this specific deployment. The chart and version fields are combined into 'chart-version.tgz' and looked for relative to *src/sinfonia/deployment_recipe.py*.  So chart could refer to a subdirectory (charts/example), but it could also be a fully qualified URL if the chart is stored somewhere else, i.e. https://thirdparty.org/charts/example. The charts' template values can be overriden with a local values.
+
+Example recipe.yaml file,
+```
+# <unique_uuid>.yaml
+
+    description: |-
+        This is a description for the example deployment.
+        We typically specify at least a fullnameOverride because the default
+        template helm chart defines this as "namespace-chartname" and this name
+        is used to name the service. By overriding this generated name we get a
+        predictable service name that a client can use without knowing the
+        namespace name.
+    chart: example
+    version: 0.1.0
+    values:
+        # Override values in Helm chart
+        fullnameOverride: example
+    restricted: false
+```
+
+In addition, we provide an example recipes repository with defined deployment recipes at *RECIPES*.
 
 ### Matchers
 
@@ -194,7 +227,7 @@ TBD
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This repository is licensed under the MIT License. See the LICENSE file for details.
 
 ## Contact
 
