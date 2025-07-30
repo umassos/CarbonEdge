@@ -1,9 +1,7 @@
 image:
   tag: dev3
 
-sinfoniaTier1Url: http://192.168.245.190:30050
-sinfoniaTier2Url: http://192.168.245.190:30051
-
-sinfoniaRecipes: ""
+sinfoniaRecipes: "RECIPES"
+sinfoniaCloudlets: ""
 sinfoniaTier1Matchers: "carbon-aware"
 carbonedgeTier1CarbonLogFolderPath: "~/logs"

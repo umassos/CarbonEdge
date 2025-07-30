@@ -2,6 +2,10 @@
 
 ## Introduction
 
+This is the official repository for **_CarbonEdge_**, a carbon-aware framework for edge computing that optimizes the placement of edge workloads across mesoscale edge data centers to reduce carbon emissions while meeting latency SLOs. CarbonEdge was built on top of the [Sinfonia framework](https://github.com/cmusatyalab/sinfonia).
+
+Our work was presented at [HPDC 2025](https://hpdc.sci.utah.edu/2025/). Link to paper [here](https://github.com/umassos/CarbonEdge/tree/main).
+
 ## Architecture
 
 Add diagram.
@@ -10,12 +14,12 @@ How CarbonEdge reporting works, how Tier1 uses carbon data to route request.
 
 ## Organization
 
-The project is organized into the following modules:
-- **deploy-tier1** - Contains Ansible deployment scripts to deploy CarbonEdge-enabled Sinfonia-Tier2. Currently not in use.
-- **deploy-tier2** - Contains Ansible deployment scripts to deploy CarbonEdge-enabled Sinfonia-Tier2.
-- **deploy-tier2/inv** - Contains Ansible deployment scripts to deploy CarbonEdge-enabled Sinfonia-Tier2.
-- **RECIPES** - Contains Sinfonia recipes to deploy user applications in Sinfonia.
-- **src** - Contains CarbonEdge/Sinfonia code and logic.
+The project is organized into the following noteworthy modules:
+- **deploy-tier1** - Contains deployment scripts to deploy CarbonEdge-Tier1.
+- **deploy-tier2** - Contains deployment scripts to deploy CarbonEdge-Tier2.
+- **deploy-tier2/inv** - Contains Ansible inventory and secrets to deploy CarbonEdge-Tier2.
+- **RECIPES** - Contains Sinfonia recipes to deploy user applications in CarbonEdge.
+- **src** - Contains CarbonEdge code and logic.
 
 ## Prerequisites
 
@@ -33,91 +37,68 @@ In addition, CarbonEdge requires an API authentication key from Electricity Maps
 
 ## Deployment
 
-### Deploying CarbonEdge
+### Quickstart
 
-Sinfonia is designed to be deployed as a Kubernetes deployment. We provided an Ansible script to automate Sinfonia-Tier2 
-deployment across multiple target machines. The Ansible script will provision the necessary infrastructure and services to run Sinfonia, and will deploy Sinfonia as a Helm chart deployment. A template Ansible inventory file is given at `deploy-tier2/inv/inv.yaml`. To provide the Electricity maps authentication key, create an Ansible vault file,
+We provided an initial pre-configured Ansible playbook at *deploy-tier2/deploy.yml* to deploy a local CarbonEdge-Tier1 and CarbonEdge-Tier2 instance on Kuberentes. First, edit the Ansible playbook to provide your local system information,
+- Change `hosts` to 'localhost'.
+- Change `become_user` to your system's superuser.
+- Change `sinfonia_tier1_url` and `sinfonia_tier2_url` to the explicit IP address of your system. **Note that CarbonEdge-Tier1 and CarbonEdge-Tier2 is configured to always run on port 30050 and 30051 respectively per their provided Helm charts.**
+- Verify the external tasks imported in the Ansible playbook matches your intended use case and system resources (e.g. comment out the `nvidia_gpu_operator` task if your system does not support NVIDIA GPU).
+
+Next, you need to provide your Electricity Maps API key. We strongly recommend that you manage secret key via Ansible vault secret, or you can directly provide the secret key in the Ansible playbook. To create an Ansible vault secret file,
 ```
 ansible-vault create deploy-tier2/inv/secrets.yaml
 ```
-with the following field,
+and include the following field,
 ```
 carbonedge_tier2_electricity_maps_auth_token: <AUTH_TOKEN>
 ```
 
-To deploy, modify the Ansible deployment script with your system's configuration (username, IP), and run the provided Ansible script as follows,
+After all necessary configurations are specified, run the Ansible playbook as follows,
 ```
-ansible-playbook deploy-tier2/deploy.yml -KJ 
-```
-
-If you want to deploy to multiple target machines via Ansible inventory, modify the Ansible deployment script accordingly and run the command,
-```
-ansible-playbook deploy-tier2/deploy.yml -KJ -i <PATH_TO_INVENTORY_FILE>
+ansible-playbook deploy-tier2/deloy.yml -KJ
 ```
 
-This will deploy the necessary infrastructure and a CarbonEdge-enabled Sinfonia-Tier2 instance on Kubernetes. To verify that all deployments are up and running, you can run,
+Ansible will now install the necessary infrastructures (k3s), dependencies (e.g. Prometheus, Grafana, Kilo, etc.), and finally CarbonEdge-Tier1 and CarbonEdge-Tier2. You can list all running pods to verify that all deployments were correctly installed,
 ```
-kubectl get po -A
+k3s kubectl get po -A
 ```
 
-### Configuration
+To facilitate configuration, CarbonEdge-Tier1 and CarbonEdge-Tier2 installations are managed as Helm chart deployments. We provide a Helm repository on Github at `https://k2nt.github.io/helm/carbonedge`. To add the repository to Helm,
+```
+helm repo add carbonedge https://k2nt.github.io/helm/carbonedge
+```
 
-Sinfonia-Tier1 provides the following configurable environment variables,
-- `SINFONIA_CLOUDLETS` [OPTIONAL]: 
-- `SINFONIA_MATCHERS` [DEFAULT ["carbon-edge"]]: 
-- `SINFONIA_RECIPES` [DEFAULT 'RECIPIES']:
+### Deploying CarbonEdge-Tier1
 
-Sinfonia-Tier2
+Currently, CarbonEdge is designed to be deployed as 1 Tier-1 to many Tier-2s. Ideally, there should only be one CarbonEdge-Tier1 service present. You can deploy CarbonEdge-Tier1 manually via Helm or via the provided Ansible playbook.
 
-CarbonEdge is configured via environment variables. For Sinfonia-Tier1, the available environment variables are,
-- `CARBONEDGE_CARBON_LOG_FOLDER_PATH`: Folder path to log carbon logs.
+The available Ansible configurations for CarbonEdge-Tier1 are as follows,
+- `sinfonia_recipes` [Optional]: Folder path to mount *Sinfonia recipes* for deploying user-specified applications on CarbonEdge. 
+- `sinfonia_tier1_matchers` [Default = "carbon-aware"]: List of matchers Tier-1 will use. The available matchers are "location", "network", "random", and "carbon-aware". The matchers are listed as comma-separated values and will be applied in the order they are given. An example would be "location,network,carbon-aware".
+- `sinfonia_tier1_cloudlets` [Optional]: File path to cloudlet configuration file to preemptively register Tier-2 instances.
+- `carbonedge_tier1_carbon_log_folder_path` [Optional]: 
 
-For Sinfonia-Tier2, the available environment variables are,
-- `CARBONEDGE_LATITUDE` / `CARBONEDGE_LATITUDE` [OPTIONAL]: Coordinates for Sinfonia-Tier2 server location. If unspecified, Sinfonia will attempt to estimate coordinates based on IP address.
-- `CARBONEDGE_CARBON_INTENSITY_QUERY_MODE` ('REALTIME' | 'REPLAY'): Method to inquire carbon intensity at Sinfonia-Tier2 location. **Note: For now, only 'REALTIME' mode is supported.**
-- `CARBONEDGE_REALTIME_ELECTRICITY_MAPS_AUTH_TOKEN`: Electricity Maps API authentication token.
+We also provide a Helm config file *deploy-tier2/helm-manual-inv-tier2.yaml* for manual install,
+```
+helm install carbonedge-tier1 carbonedge/carbonedge-tier1 -f deploy-tier2/helm-manual-inv-tier1.yaml
+```
 
-All CarbonEdge environment variables, unless specified as optional or default, must be configured in order for CarbonEdge to be enabled. On successful configuration, the server will log `CarbonEdge enabled`, otherwise the server will log `CarbonEdge disabled`.
+Note that via our provided Helm chart, CarbonEdge-Tier1 will be launched as a NodePort service at port 30050.
 
-To configure CarbonEdge environment variables in Kubernetes deployment, we provided hooks in the Ansible deployment scripts that you can specify. For Sinfonia-Tier2 deployment,
-- `sinfonia_recipes`: Path or public URL to Sinfonia recipe repository.
-- `sinfonia_tier1_url`: Public URL of Sinfonia-Tier1 instance.
-- `sinfonia_tier2_url`: Public URL of Sinfonia-Tier2 instance. **Note: Sinfonia-Tier2 deployed via Helm is always at port 30051.**
-- `carbonedge_tier2_carbon_intensity_query_mode`
-- `carbonedge_tier2_latitude` / `carbonedge_tier2_longitude`
+### Deploying CarbonEdge-Tier2
 
-### CarbonEdge reporting
-
-
+You can deploy CarbonEdge-Tier2
 
 ## Development
 
-### Getting started
+### 
 
-Dependencies for the project are managed by the Poetry package manager, and can be found in pyproject.toml. We recommend that you start a virtual environment via `poetry env activate`. To install, 
-run:
-```
-poetry install
-```
+### Recipes
 
-Poetry will spawn a virtual environment, install the necessary packages, and install Sinfonia-Tier1 and Sinfonia-Tier2 
-as modules. To verify that installation was successful, you can now run Sinfonia-Tier1 or Sinfonia-Tier2 as follows,
-```
-poetry run sinfonia-tier<1/2>
-```
+TBD
 
-### Running Sinfonia locally
-
-To enable CarbonEdge, environment variables must be defined as specified in the CarbonEdge configuration section. For local development, we provide a convenient `--carbonedge-config` option to parse environment variables from a `.env` file.
-
-For Sinfonia-Tier1, the
-
-To view help panels, you can run,
-```
-poetry run sinfonia-tier<1/2> --help
-```
-
-### Sinfonia matchers
+### Matchers
 
 TBD
 
