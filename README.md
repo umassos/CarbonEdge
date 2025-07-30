@@ -200,7 +200,7 @@ To create a new recipe, the first step is to containerize and create a Helm char
 
 The deployment recipe file is a YAML document which is expected to be named as a unique UUID with a *.yaml* extension and is stored in the `--recipes=URL` (`SINFONIA_RECIPES` environment variable) repository of a Sinfonia Tier2 instance. There is an optional description field, which is used for documenting the purpose and customizations of this specific deployment. The chart and version fields are combined into 'chart-version.tgz' and looked for relative to *src/sinfonia/deployment_recipe.py*.  So chart could refer to a subdirectory (charts/example), but it could also be a fully qualified URL if the chart is stored somewhere else, i.e. https://thirdparty.org/charts/example. The charts' template values can be overriden with a local values.
 
-Example recipe.yaml file,
+Example recipes deployment file,
 ```
 # <unique_uuid>.yaml
 
@@ -223,7 +223,20 @@ In addition, we provide an example recipes repository with defined deployment re
 
 ### Matchers
 
-TBD
+Matchers are filter function that tells Tier-1 which Tier-2 targets should be selected to route deploy requests from Tier-3. They are provided as an ordered list, where matchers are applied sequentially in a pipeline. A matcher can either *yield* a cloudlet to pass on the the next matcher, or it can *remove* a cloudlet entirely from the list of known cloudlets due to that cloudlet always violating the current matcher.
+
+We provide 4 default matchers:
+- *location*: Yield any geographically close cloudlets.
+- *random*: Shuffle anything that is left and return in randomized order.
+- *network*: Yield any cloudlets that claim to be local. Also removes cloudlets that explicitly blacklist the client address
+- *carbon-aware*: Yield the Tier-2 cloudlet with the lowest carbon intensity value.
+
+To define a custom matcher, implement the matcher function in the file *src/sinfonia/matchers.py*. All matcher functions must contain the same signature,
+- ```_client_info: ClientInfo``` - Information of Tier-3 client.
+- ```_deployment_recipe: DeploymentRecipe``` - Information on application recipe to be deployed.
+- ```cloudlets: List[Cloudlet]``` - List of Tier-2 cloudlets known to Tier-1.
+
+To specify which matcher to use, define the environment variable `SINFONIA_MATCHERS` or the CLI option `--matcher` on Tier-1. The matchers are listed as comma-separated values and will be applied in the order they are given. An example would be *"location,network,carbon-aware"*.
 
 ## License
 
