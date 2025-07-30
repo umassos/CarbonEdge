@@ -194,9 +194,7 @@ docker push <image_name>
 
 ### Recipes
 
-A Sinfonia recipe represents a deployable end-user application on Sinfonia. Essentially, it is a wrapper around a Helm chart. 
-
-To create a new recipe, the first step is to containerize and create a Helm chart for your application. Then, define a deployment recipe file in either a local folder or a publically-accessible recipe repository.
+A Sinfonia recipe represents a deployable end-user application on Sinfonia. Essentially, it is a wrapper around a Helm chart. To create a new recipe, the first step is to containerize and create a Helm chart for your application. Then, define a deployment recipe file in either a local folder or a publically-accessible recipe repository.
 
 The deployment recipe file is a YAML document which is expected to be named as a unique UUID with a *.yaml* extension and is stored in the `--recipes=URL` (`SINFONIA_RECIPES` environment variable) repository of a Sinfonia Tier2 instance. There is an optional description field, which is used for documenting the purpose and customizations of this specific deployment. The chart and version fields are combined into 'chart-version.tgz' and looked for relative to *src/sinfonia/deployment_recipe.py*.  So chart could refer to a subdirectory (charts/example), but it could also be a fully qualified URL if the chart is stored somewhere else, i.e. https://thirdparty.org/charts/example. The charts' template values can be overriden with a local values.
 
