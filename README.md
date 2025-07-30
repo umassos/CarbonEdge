@@ -129,7 +129,7 @@ To facilitate configuration, CarbonEdge-Tier1 and CarbonEdge-Tier2 installations
 helm repo add carbonedge https://k2nt.github.io/helm/carbonedge
 ```
 
-We also provide an example Helm config file at *deploy-tier2/helm-manual-inv-tier2.yaml* for manual install,
+The Helm charts for Tier-1 and Tier-2 are *carbonedge/carbonedge-tier1* and *carbonedge/carbonedge-tier2* respectively. We also provide an example Helm config file at *deploy-tier2/helm-manual-inv-tier2.yaml* for manual install,
 ```
 helm install carbonedge-tier<1/2> carbonedge/carbonedge-tier<1/2> -f deploy-tier<1/2>/helm-manual-inv-tier<1/2>.yaml
 ```
@@ -144,15 +144,37 @@ CarbonEdge was designed to be a feature of the Sinfonia platform. CarbonEdge can
 
 ### Getting started
 
-TBD
+Dependencies are managed by the Poetry package manager. The included *pyproject.toml* file lists all required dependencies and their versions. To install, create a Poetry-managed Python virtual environment ```poetry env activate``` and run ```poetry install```. Poetry will then install the necessary dependencies as well as CarbonEdge-Tier1 and CarbonEdge-Tier2 as modules. To check that installation was successful, run ```poetry run sinfonia-tier<1/2>``` to see whether the services were launched. CarbonEdge Tier-1 and Tier-2 are essentially Flask services, and you can view the list of available APIs via OpenAPI at the *api/v1/ui/* endpoint.
+
+CarbonEdge is enabled on Sinfonia via environment variables. Specific environment variables for Tier-1 and Tier-2 are listed in the [CarbonEdge-Tier1](#carbonedge-tier1) and [CarbonEdge-Tier2](#carbonedge-tier2) section respectively. All Sinfonia-specific and CarbonEdge-specific variables are prefixed with *SINFONIA_* and *CARBONEDGE_* respectively. For both Tier-1 and Tier-2, we provide an easy ```--carbonedge-config``` option to point to an *.env* file to specify CarbonEdge environment variables. To view the detailed help panel on other options, run ```poetry run sinfonia-tier<1/2> --help```. 
 
 ### CarbonEdge-Tier1
 
-TBD
+Sinfonia environment variables, can also be specified via CLI option noted below,
+- `SINFONIA_RECIPES` [Optional, Default = *"RECIPES"*, `--recipes`]
+- `SINFONIA_MATCHERS` [Optional, Default = *"carbon-aware"*, `--match`]
+- `SINFONIA_CLOUDLETS` [Optional]
+
+CarbonEdge environment variables:
+- `CARBONEDGE_CARBON_LOG_FOLDER_PATH` [Optional]
 
 ### CarbonEdge-Tier2
 
-TBD
+Sinfonia environment variables, can also be specified via CLI option noted below,
+- `SINFONIA_RECIPES` [Optional, Default = *"RECIPES"*, `--recipes`]
+- `SINFONIA_KUBECONFIG` [Optional, `--kubeconfig`]
+- `SINFONIA_KUBECONTEXT` [Optional, `--kubecontext`]
+- `SINFONIA_PROMETHEUS` [Optional, `--prometheus`]
+- `SINFONIA_TIER1_URLS` [Required, `--tier1-url`] 
+- `SINFONIA_TIER2_URL` [Required, `--tier2-url`]
+- `REPORT_TO_TIER1_INTERVAL_SECONDS` [Optional, Default = 15]
+
+CarbonEdge environment variables:
+- `CARBONEDGE_LATITUDE` / `CARBONEDGE_LONGITUDE` [Optional]
+- `CARBONEDGE_CARBON_INTENSITY_QUERY_MODE` [Optional]
+- `CARBONEDGE_REALTIME_ELECTRICITY_MAPS_AUTH_TOKEN` [Optional]
+
+Note that `SINFONIA_TIER1_URLS` and `SINFONIA_TIER2_URL` **_must_** be defined to enable reporting job from Tier-2 to Tier-1. Also, Tier-2 requires a Prometheus to query system telemetry. If Prometheus is deployed on Kubernetes, you can manually acquire the Prometheus service IP address by running ```kubectl get po -n monitoring -o wide``` and get the IP address of pod ```prometheus-kube-prometheus-stack-prometheus-0```. Note that Prometheus runs on default port 9090.
 
 ### CarbonEdge-Tier3
 
